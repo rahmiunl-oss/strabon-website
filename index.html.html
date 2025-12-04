@@ -82,6 +82,21 @@
         border-color: #06b6d4;
     }
   </style>
+
+  <!-- Supabase Auth client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://ncssozhpwzvzeneaumlz.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_PA_pZE8gwvSXYUERua8GZQ_x_-1UhFa";
+
+    // Global client
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+  </script>
+</head>
+
 </head>
 <body class="bg-gray-50 text-strabon-text font-sans antialiased relative">
   <div
@@ -139,7 +154,7 @@
       </div>
 
       <div class="flex gap-4 text-sm font-medium items-center">
-        <button onclick="showEditorView()" class="hidden md:flex items-center gap-2 text-gray-500 hover:text-strabon-primary transition font-bold text-xs uppercase tracking-wide mr-2">
+        <button onclick="openLoginModal()" class="hidden md:flex items-center gap-2 text-gray-500 hover:text-strabon-primary transition font-bold text-xs uppercase tracking-wide mr-2">
             <i class="fa-solid fa-lock"></i> Partner Login
         </button>
 
@@ -1380,6 +1395,111 @@
       </div>
     </div>
   </footer>
+
+<!-- Partner Login Modal -->
+<div
+  id="login-modal"
+  class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50"
+>
+  <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm">
+    <h2 class="text-lg font-bold mb-4">Partner Login</h2>
+
+    <form id="login-form" class="space-y-3">
+      <div>
+        <label class="block text-sm mb-1">Email</label>
+        <input
+          type="email"
+          name="email"
+          required
+          class="w-full border rounded px-3 py-2 text-sm"
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm mb-1">Password</label>
+        <input
+          type="password"
+          name="password"
+          required
+          class="w-full border rounded px-3 py-2 text-sm"
+        />
+      </div>
+
+      <p id="login-error" class="text-xs text-red-500 hidden"></p>
+
+      <div class="flex justify-end gap-2 mt-4">
+        <button
+          type="button"
+          onclick="closeLoginModal()"
+          class="text-sm px-3 py-2"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="text-sm px-4 py-2 rounded bg-blue-600 text-white"
+        >
+          Login
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+  function openLoginModal() {
+    const modal = document.getElementById("login-modal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+  }
+
+  function closeLoginModal() {
+    const modal = document.getElementById("login-modal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+
+    const err = document.getElementById("login-error");
+    if (err) {
+      err.classList.add("hidden");
+      err.textContent = "";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("login-form");
+    if (!form) return;
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const data = new FormData(form);
+      const email = data.get("email");
+      const password = data.get("password");
+
+      const { data: authData, error } = await supabaseClient.auth
+        .signInWithPassword({ email, password });
+
+      const err = document.getElementById("login-error");
+
+      if (error) {
+        err.textContent = error.message || "Login failed";
+        err.classList.remove("hidden");
+        return;
+      }
+
+      // Login başarılı → modalı kapat ve editörü aç
+      closeLoginModal();
+      if (typeof showEditorView === "function") {
+        showEditorView();
+      }
+    });
+  });
+
+  async function partnerLogout() {
+    await supabaseClient.auth.signOut();
+    window.location.href = "/";
+  }
+</script>
+
 
   <script>
     const translations = {
