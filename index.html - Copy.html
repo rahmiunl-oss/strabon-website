@@ -1,0 +1,2829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StrabonWorks - Industrial Trust Network</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@500;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            strabon: {
+              primary: "#0F172A",
+              accent: "#06b6d4",
+              darkAccent: "#0891b2",
+              surface: "#F8FAFC",
+              border: "#E2E8F0",
+              text: "#334155",
+            },
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+            header: ["Oswald", "sans-serif"],
+          },
+          boxShadow: {
+            glass: "0 8px 32px 0 rgba(31, 38, 135, 0.07)",
+            float: "0 20px 40px -5px rgba(6, 182, 212, 0.15)",
+            glow: "0 0 15px rgba(6, 182, 212, 0.4)",
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .hidden-view {
+      display: none !important;
+    }
+    .fade-in {
+      animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .modal {
+      transition: opacity 0.25s ease;
+    }
+    body.modal-active {
+      overflow-x: hidden;
+      overflow-y: visible !important;
+    }
+    .dot-map-bg {
+      background-image: radial-gradient(#94a3b8 1px, transparent 1px);
+      background-size: 30px 30px;
+    }
+    /* Editör input stilleri */
+    .input-field:focus {
+        box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.1);
+        border-color: #06b6d4;
+    }
+  </style>
+
+  <!-- Supabase Auth client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://ncssozhpwzvzeneaumlz.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_PA_pZE8gwvSXYUERua8GZQ_x_-1UhFa";
+
+    // Global client
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+  </script>
+</head>
+
+</head>
+<body class="bg-gray-50 text-strabon-text font-sans antialiased relative">
+  <div
+    class="fixed inset-0 z-[-1] dot-map-bg opacity-[0.4] pointer-events-none"
+  ></div>
+  <div
+    class="fixed inset-0 z-[-2] bg-gradient-to-tr from-blue-50 via-white to-cyan-50/30"
+  ></div>
+
+  <nav
+    class="sticky top-0 z-40 bg-white/70 backdrop-blur-md border-b border-white/50 h-20 transition-all"
+  >
+    <div
+      class="max-w-7xl mx-auto px-4 h-full flex justify-between items-center"
+    >
+      <div
+        onclick="showMainView()"
+        class="flex items-center gap-3 cursor-pointer group select-none"
+      >
+        <div
+          class="w-10 h-10 flex items-center justify-center bg-strabon-primary rounded-xl group-hover:bg-strabon-accent transition-colors duration-300 shadow-lg"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            class="w-6 h-6 text-white"
+            fill="none"
+          >
+            <rect
+              x="2"
+              y="2"
+              width="20"
+              height="20"
+              rx="6"
+              fill="currentColor"
+              opacity="0.18"
+            ></rect>
+            <path
+              d="M7 8.2C7 6.4 8.6 5 11 5c1.9 0 3.4.7 4.3 1.9L13.6 8c-.5-.7-1.3-1.1-2.5-1.1-1.2 0-2 .5-2 1.2 0 .8.8 1.1 2.5 1.5 2.2.5 4.4 1.2 4.4 3.7 0 2.2-1.8 3.7-4.7 3.7-2.5 0-4.1-.9-5-2.4l1.7-1.1c.5.9 1.5 1.6 3.2 1.6 1.4 0 2.3-.6 2.3-1.5 0-.9-.8-1.2-2.6-1.6C9.1 11.4 7 10.8 7 8.2Z"
+              fill="currentColor"
+            ></path>
+          </svg>
+        </div>
+        <div class="flex flex-col justify-center">
+          <span
+            class="text-xl font-header font-bold text-strabon-primary leading-none tracking-tight"
+          >
+            STRABON
+          </span>
+          <span
+            class="text-[9px] font-bold text-gray-400 tracking-[0.25em] uppercase mt-1"
+          >
+            Industrial Trust Network
+          </span>
+        </div>
+      </div>
+
+      <div class="flex gap-4 text-sm font-medium items-center">
+        <button onclick="openLoginModal()" class="hidden md:flex items-center gap-2 text-gray-500 hover:text-strabon-primary transition font-bold text-xs uppercase tracking-wide mr-2">
+            <i class="fa-solid fa-lock"></i> Partner Login
+        </button>
+
+        <button
+          id="back-btn"
+          onclick="showMainView()"
+          class="hidden hidden-view items-center gap-2 text-gray-500 hover:text-strabon-accent transition mr-2 px-4 py-2 rounded-full hover:bg-white/50"
+        >
+          <i class="fa-solid fa-arrow-left"></i>
+          <span data-i18n="back">BACK</span>
+        </button>
+
+        <div
+          class="hidden md:flex gap-1 items-center bg-gray-200/50 backdrop-blur rounded-full p-1"
+        >
+          <button
+            onclick="switchLanguage('en')"
+            id="lang-en"
+            class="px-3 py-1 rounded-full text-xs font-bold bg-white shadow-sm text-strabon-primary transition"
+          >
+            EN
+          </button>
+          <button
+            onclick="switchLanguage('tr')"
+            id="lang-tr"
+            class="px-3 py-1 rounded-full text-xs font-bold text-gray-500 hover:text-strabon-primary transition"
+          >
+            TR
+          </button>
+        </div>
+
+        <button
+          onclick="toggleModal('modal-join')"
+          class="bg-strabon-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-strabon-accent transition text-xs shadow-lg shadow-blue-900/20 tracking-wide border border-transparent hover:border-cyan-300"
+        >
+          <span data-i18n="join">JOIN NETWORK</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div id="view-dashboard" class="fade-in">
+    <header
+      class="pt-24 pb-16 px-4 text-center relative overflow-hidden z-10"
+    >
+      <h1
+        id="hero-title"
+        class="text-5xl md:text-7xl font-header font-bold text-strabon-primary mb-8 leading-snug tracking-tight drop-shadow-sm py-2"
+      ></h1>
+      <p
+        id="hero-desc"
+        class="text-xl text-gray-500 mb-12 max-w-2xl mx-auto font-light leading-relaxed"
+      ></p>
+
+      <div
+        class="max-w-3xl mx-auto relative mb-16 z-20 transition-all duration-300 hover:scale-[1.01]"
+      >
+        <div
+          class="bg-white/90 backdrop-blur-xl p-2 rounded-full shadow-float flex items-center border border-white/50 ring-1 ring-gray-100"
+        >
+          <div class="pl-6 pr-4 text-strabon-accent">
+            <i class="fa-solid fa-magnifying-glass text-xl"></i>
+          </div>
+          <input
+            type="text"
+            id="search-input"
+            onkeyup="renderCards(this.value)"
+            class="flex-grow bg-transparent outline-none text-gray-700 text-lg placeholder-gray-400 font-light h-14"
+            placeholder=""
+          />
+          <button
+            class="bg-strabon-accent hover:bg-strabon-darkAccent text-white rounded-full px-8 py-4 font-bold transition shadow-glow flex items-center gap-2 group"
+          >
+            <span data-i18n="btn_discover">DISCOVER</span>
+            <i
+              class="fa-solid fa-compass group-hover:rotate-45 transition-transform duration-300"
+            ></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap justify-center gap-4">
+        <button
+          onclick="filterSector('all', this)"
+          class="filter-btn group px-6 py-2.5 rounded-full border border-strabon-accent bg-strabon-accent/10 text-strabon-accent text-sm font-bold transition-all shadow-glow"
+        >
+          <i class="fa-solid fa-layer-group mr-2"></i>
+          <span data-i18n="sec_all">All Sectors</span>
+        </button>
+        <button
+          onclick="filterSector('construction', this)"
+          class="filter-btn group px-6 py-2.5 rounded-full border border-gray-300 bg-transparent text-gray-500 hover:border-strabon-accent hover:text-strabon-accent hover:bg-cyan-50 text-sm font-medium transition-all"
+        >
+          <i class="fa-solid fa-trowel-bricks mr-2"></i>
+          <span data-i18n="sec_const">Construction</span>
+        </button>
+        <button
+          onclick="filterSector('mining', this)"
+          class="filter-btn group px-6 py-2.5 rounded-full border border-gray-300 bg-transparent text-gray-500 hover:border-strabon-accent hover:text-strabon-accent hover:bg-cyan-50 text-sm font-medium transition-all"
+        >
+          <i class="fa-solid fa-gem mr-2"></i>
+          <span data-i18n="sec_mine">Mining</span>
+        </button>
+        <button
+          onclick="filterSector('energy', this)"
+          class="filter-btn group px-6 py-2.5 rounded-full border border-gray-300 bg-transparent text-gray-500 hover:border-strabon-accent hover:text-strabon-accent hover:bg-cyan-50 text-sm font-medium transition-all"
+        >
+          <i class="fa-solid fa-bolt mr-2"></i>
+          <span data-i18n="sec_energy">Energy</span>
+        </button>
+        <button
+          onclick="filterSector('drilling', this)"
+          class="filter-btn group px-6 py-2.5 rounded-full border border-gray-300 bg-transparent text-gray-500 hover:border-strabon-accent hover:text-strabon-accent hover:bg-cyan-50 text-sm font-medium transition-all"
+        >
+          <i class="fa-solid fa-bullseye mr-2"></i>
+          <span data-i18n="sec_drill">Drilling</span>
+        </button>
+        <button
+          onclick="filterSector('equipment', this)"
+          class="filter-btn group px-6 py-2.5 rounded-full border border-gray-300 bg-transparent text-gray-500 hover:border-strabon-accent hover:text-strabon-accent hover:bg-cyan-50 text-sm font-medium transition-all"
+        >
+          <i class="fa-solid fa-truck-monster mr-2"></i>
+          <span data-i18n="sec_equip">Equipment</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8 pb-24">
+      <div class="flex flex-col gap-6 mb-10 border-b border-gray-200/50 pb-8">
+        <div class="flex justify-between items-end">
+          <div>
+            <span
+              class="text-xs font-bold text-strabon-accent uppercase tracking-wider mb-1 block flex items-center gap-2"
+            >
+              <span
+                class="w-2 h-2 rounded-full bg-green-500 animate-pulse"
+              ></span>
+              <span data-i18n="live_db">Live Database</span>
+            </span>
+            <span
+              id="result-count"
+              class="text-2xl font-bold text-strabon-primary"
+              >Loading...</span
+            >
+          </div>
+        </div>
+
+        <div
+          class="bg-white/70 border border-white/60 rounded-2xl shadow-glass px-4 py-4"
+        >
+          <div class="flex justify-between items-center mb-3">
+            <h3
+              class="text-xs font-bold text-gray-600 uppercase tracking-wider flex items-center gap-2"
+            >
+              <i class="fa-solid fa-star text-amber-400"></i>
+              <span data-i18n="top_title"
+                >Top Verified Companies by Trust Score</span
+              >
+            </h3>
+            <span
+              class="text-[11px] text-gray-400"
+              data-i18n="top_sub"
+              >Updated in real-time</span
+            >
+          </div>
+          <div
+            id="top-companies"
+            class="flex gap-4 overflow-x-auto no-scrollbar pb-1"
+          ></div>
+        </div>
+      </div>
+
+      <div
+        id="card-container"
+        class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-16"
+      ></div>
+
+      <section class="mt-10 mb-16">
+        <div
+          class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8"
+        >
+          <div>
+            <h2
+              class="text-2xl md:text-3xl font-header font-bold text-strabon-primary mb-2"
+              data-i18n="how_title"
+            >
+              How Strabon Works
+            </h2>
+            <p
+              class="text-sm text-gray-500 max-w-xl"
+              data-i18n="how_sub"
+            >
+              Create your company profile, verify your references and let your
+              Strabon Trust Score™ increase your visibility.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6">
+          <div
+            class="bg-white/80 border border-gray-100 rounded-2xl p-6 shadow-glass"
+          >
+            <div
+              class="w-9 h-9 rounded-xl bg-cyan-50 flex items-center justify-center mb-4"
+            >
+              <span class="text-xs font-bold text-strabon-accent">01</span>
+            </div>
+            <h3
+              class="text-sm font-bold text-strabon-primary mb-2"
+              data-i18n="how_step1_title"
+            >
+              Create your profile
+            </h3>
+            <p
+              class="text-xs text-gray-500 leading-relaxed"
+              data-i18n="how_step1_desc"
+            >
+              Add your company details, sectors, core services, assets and
+              project highlights.
+            </p>
+          </div>
+
+          <div
+            class="bg-white/80 border border-gray-100 rounded-2xl p-6 shadow-glass"
+          >
+            <div
+              class="w-9 h-9 rounded-xl bg-cyan-50 flex items-center justify-center mb-4"
+            >
+              <span class="text-xs font-bold text-strabon-accent">02</span>
+            </div>
+            <h3
+              class="text-sm font-bold text-strabon-primary mb-2"
+              data-i18n="how_step2_title"
+            >
+              Verify references
+            </h3>
+            <p
+              class="text-xs text-gray-500 leading-relaxed"
+              data-i18n="how_step2_desc"
+            >
+              Send verification requests to past clients and partners to build a
+              verified track record.
+            </p>
+          </div>
+
+          <div
+            class="bg-white/80 border border-gray-100 rounded-2xl p-6 shadow-glass"
+          >
+            <div
+              class="w-9 h-9 rounded-xl bg-cyan-50 flex items-center justify-center mb-4"
+            >
+              <span class="text-xs font-bold text-strabon-accent">03</span>
+            </div>
+            <h3
+              class="text-sm font-bold text-strabon-primary mb-2"
+              data-i18n="how_step3_title"
+            >
+              Grow with Trust Score™
+            </h3>
+            <p
+              class="text-xs text-gray-500 leading-relaxed"
+              data-i18n="how_step3_desc"
+            >
+              Higher Strabon Trust Scores mean higher visibility in search
+              results and more qualified leads.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="mt-10">
+        <div class="text-center mb-10">
+          <h2
+            class="text-2xl md:text-3xl font-header font-bold text-strabon-primary mb-3"
+            data-i18n="pricing_title"
+          >
+            Pricing for Industrial Networks
+          </h2>
+          <p
+            class="text-sm text-gray-500 max-w-2xl mx-auto"
+            data-i18n="pricing_sub"
+          >
+            Start free, then upgrade as your company grows. Every plan includes
+            a public profile and access to the Strabon Trust Score™ framework.
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6">
+          <div
+            class="bg-white/90 border border-gray-200 rounded-2xl p-7 shadow-glass flex flex-col"
+          >
+            <h3 class="text-sm font-bold text-strabon-primary mb-1">Free</h3>
+            <p
+              class="text-xs text-gray-500 mb-4"
+              data-i18n="price_free_tag"
+            >
+              For small teams getting started.
+            </p>
+            <div class="mb-6">
+              <span
+                class="text-3xl font-header font-bold text-strabon-primary"
+                >$0</span
+              >
+              <span
+                class="text-xs text-gray-400 ml-1"
+                data-i18n="price_month"
+                >/month</span
+              >
+            </div>
+            <ul class="text-xs text-gray-600 space-y-2 mb-6">
+              <li class="flex items-center gap-2">
+                <i
+                  class="fa-solid fa-check text-emerald-500 text-[10px]"
+                ></i>
+                <span data-i18n="price_free_1">Public company profile</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <i
+                  class="fa-solid fa-check text-emerald-500 text-[10px]"
+                ></i>
+                <span data-i18n="price_free_2"
+                  >Up to 3 listed services</span
+                >
+              </li>
+              <li class="flex items-center gap-2">
+                <i
+                  class="fa-solid fa-check text-emerald-500 text-[10px]"
+                ></i>
+                <span data-i18n="price_free_3"
+                  >Basic Strabon Trust Score™</span
+                >
+              </li>
+            </ul>
+            <button
+              class="mt-auto w-full border border-gray-300 text-xs font-bold text-gray-600 py-3 rounded-xl hover:bg-gray-50 transition"
+              onclick="toggleModal('modal-join')"
+              data-i18n="btn_get_started"
+            >
+              GET STARTED
+            </button>
+          </div>
+
+          <div
+            class="bg-strabon-primary text-white rounded-2xl p-7 shadow-float relative overflow-hidden flex flex-col"
+          >
+            <div
+              class="absolute inset-0 bg-gradient-to-br from-strabon-primary via-slate-900 to-cyan-700 opacity-80"
+            ></div>
+            <div
+              class="relative z-10 flex justify-between items-start mb-4"
+            >
+              <div>
+                <h3 class="text-sm font-bold mb-1">Pro</h3>
+                <p
+                  class="text-xs text-cyan-200"
+                  data-i18n="price_pro_tag"
+                >
+                  For growth-focused industrial suppliers.
+                </p>
+              </div>
+              <span
+                class="text-[10px] font-bold bg-amber-400 text-slate-900 px-2 py-1 rounded-full"
+                data-i18n="badge_popular"
+                >MOST POPULAR</span
+              >
+            </div>
+            <div class="relative z-10 mb-6">
+              <span class="text-3xl font-header font-bold">$79</span>
+              <span
+                class="text-xs text-cyan-100 ml-1"
+                data-i18n="price_month"
+                >/month</span
+              >
+            </div>
+            <ul class="relative z-10 text-xs text-cyan-50 space-y-2 mb-6">
+              <li class="flex items-center gap-2">
+                <i
+                  class="fa-solid fa-check text-emerald-400 text-[10px]"
+                ></i>
+                <span data-i18n="price_pro_1"
+                  >Unlimited services & assets</span
+                >
+              </li>
+              <li class="flex items-center gap-2">
+                <i
+                  class="fa-solid fa-check text-emerald-400 text-[10px]"
+                ></i>
+                <span data-i18n="price_pro_2"
+                  >Verified reference module</span
+                >
+              </li>
+              <li class="flex items-center gap-2">
+                <i
+                  class="fa-solid fa-check text-emerald-400 text-[10px]"
+                ></i>
+                <span data-i18n="price_pro_3"
+                  >Priority ranking in search</span
+                >
+              </li>
+              <li class="flex items-center gap-2">
+                <i
+                  class="fa-solid fa-check text-emerald-400 text-[10px]"
+                ></i>
+                <span data-i18n="price_pro_4"
+                  >Advanced Trust Score™ insights</span
+                >
+              </li>
+            </ul>
+            <button
+              class="relative z-10 mt-auto w-full bg-white text-strabon-primary text-xs font-bold py-3 rounded-xl hover:bg-cyan-100 transition"
+              onclick="toggleModal('modal-join')"
+              data-i18n="btn_choose_pro"
+            >
+              CHOOSE PRO
+            </button>
+          </div>
+
+          <div
+            class="bg-white/90 border border-gray-200 rounded-2xl p-7 shadow-glass flex flex-col"
+          >
+            <h3 class="text-sm font-bold text-strabon-primary mb-1">
+              Enterprise
+            </h3>
+            <p
+              class="text-xs text-gray-500 mb-4"
+              data-i18n="price_ent_tag"
+            >
+              For EPCs and global industrial groups.
+            </p>
+            <div class="mb-6">
+              <span
+                class="text-3xl font-header font-bold text-strabon-primary"
+                >Custom</span
+              >
+            </div>
+            <ul class="text-xs text-gray-600 space-y-2 mb-6">
+              <li class="flex items-center gap-2">
+                <i
+                  class="fa-solid fa-check text-emerald-500 text-[10px]"
+                ></i>
+                <span data-i18n="price_ent_1"
+                  >Multi-user access & SSO</span
+                >
+              </li>
+              <li class="flex items-center gap-2">
+                <i
+                  class="fa-solid fa-check text-emerald-500 text-[10px]"
+                ></i>
+                <span data-i18n="price_ent_2"
+                  >API access to supplier data</span
+                >
+              </li>
+              <li class="flex items-center gap-2">
+                <i
+                  class="fa-solid fa-check text-emerald-500 text-[10px]"
+                ></i>
+                <span data-i18n="price_ent_3"
+                  >Dedicated success manager</span
+                >
+              </li>
+              <li class="flex items-center gap-2">
+                <i
+                  class="fa-solid fa-check text-emerald-500 text-[10px]"
+                ></i>
+                <span data-i18n="price_ent_4"
+                  >Custom Trust Score™ models</span
+                >
+              </li>
+            </ul>
+            <button
+              class="mt-auto w-full border border-strabon-primary text-xs font-bold text-strabon-primary py-3 rounded-xl hover:bg-strabon-primary hover:text-white transition"
+              onclick="toggleModal('modal-join')"
+              data-i18n="btn_contact_sales"
+            >
+              CONTACT SALES
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="view-editor" class="hidden-view fade-in min-h-screen bg-gray-50 pb-20">
+      <div class="bg-strabon-primary text-white pt-24 pb-12 px-4">
+          <div class="max-w-4xl mx-auto">
+              <div class="flex items-center gap-4 mb-4">
+                  <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-strabon-accent text-xl">
+                      <i class="fa-solid fa-user-pen"></i>
+                  </div>
+                  <div>
+                      <h1 class="text-3xl font-header font-bold">Supplier Profile Editor</h1>
+                      <p class="text-gray-400 text-sm">Manage your company presence on Strabon Network</p>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <div class="max-w-4xl mx-auto px-4 -mt-8">
+          <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+              <div class="grid grid-cols-1 md:grid-cols-3">
+                  <div class="bg-slate-50 border-r border-gray-200 p-6">
+                      <nav class="space-y-2">
+                          <button class="w-full text-left px-4 py-3 rounded-lg bg-white shadow-sm border border-gray-200 text-sm font-bold text-strabon-primary border-l-4 border-l-strabon-accent">
+                              <i class="fa-solid fa-building w-6 text-gray-400"></i> General Info
+                          </button>
+                          <button class="w-full text-left px-4 py-3 rounded-lg hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-200 text-sm font-medium text-gray-500 transition">
+                              <i class="fa-solid fa-cubes-stacked w-6 text-gray-400"></i> Services
+                          </button>
+                          <button class="w-full text-left px-4 py-3 rounded-lg hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-200 text-sm font-medium text-gray-500 transition">
+                              <i class="fa-solid fa-certificate w-6 text-gray-400"></i> Certificates
+                          </button>
+                      </nav>
+                      
+                      <div class="mt-8 p-4 bg-blue-50 rounded-xl border border-blue-100">
+                          <h4 class="text-xs font-bold text-blue-800 mb-2">Profile Status</h4>
+                          <div class="w-full bg-blue-200 h-1.5 rounded-full mb-2">
+                              <div class="bg-blue-600 h-1.5 rounded-full" style="width: 40%"></div>
+                          </div>
+                          <p class="text-[10px] text-blue-600">Complete all fields to boost your Trust Score.</p>
+                      </div>
+                  </div>
+
+                  <div class="col-span-2 p-8">
+                      <form id="editor-form" onsubmit="event.preventDefault(); saveProfileData();">
+                          <div class="space-y-6">
+                              <div>
+                                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Company Name</label>
+                                  <input type="text" id="edit-name" class="input-field w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 font-bold focus:outline-none transition" placeholder="e.g. Acme Construction" required>
+                              </div>
+
+                              <div>
+                                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tagline (Slogan)</label>
+                                  <input type="text" id="edit-tagline" class="input-field w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none transition" placeholder="e.g. Building the Future">
+                              </div>
+
+                              <div class="grid grid-cols-2 gap-4">
+                                  <div>
+                                      <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">City</label>
+                                      <input type="text" id="edit-city" class="input-field w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none transition" placeholder="e.g. Istanbul, TR">
+                                  </div>
+                                  <div>
+                                      <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Sector</label>
+                                      <select id="edit-sector" class="input-field w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none transition bg-white">
+                                          <option value="construction">Construction</option>
+                                          <option value="mining">Mining</option>
+                                          <option value="energy">Energy</option>
+                                          <option value="drilling">Drilling</option>
+                                          <option value="equipment">Equipment</option>
+                                      </select>
+                                  </div>
+                              </div>
+
+                              <div>
+                                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Description</label>
+                                  <textarea id="edit-desc" rows="4" class="input-field w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none transition" placeholder="Describe your company's core capabilities..."></textarea>
+                              </div>
+
+                              <div>
+                                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Core Services (Comma separated)</label>
+                                  <input type="text" id="edit-services" class="input-field w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none transition" placeholder="EPC, Excavation, Maintenance...">
+                              </div>
+
+                              <div>
+                                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Certificates (Comma separated)</label>
+                                  <input type="text" id="edit-certs" class="input-field w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none transition" placeholder="ISO 9001, ASME, CE...">
+                              </div>
+
+                              <div class="pt-6 border-t border-gray-100 flex items-center justify-end gap-3">
+                                  <button type="button" onclick="showMainView()" class="px-6 py-3 rounded-lg font-bold text-gray-500 hover:bg-gray-100 transition">Cancel</button>
+                                  <button type="submit" class="bg-strabon-accent hover:bg-strabon-darkAccent text-white px-8 py-3 rounded-lg font-bold shadow-lg shadow-cyan-500/30 transition transform hover:-translate-y-0.5">
+                                      <i class="fa-solid fa-save mr-2"></i> Save & Preview
+                                  </button>
+                              </div>
+                          </div>
+                      </form>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <div
+    id="view-profile"
+    class="hidden-view fade-in min-h-screen bg-white/50 backdrop-blur-sm"
+  >
+ <div
+    class="bg-gradient-to-r from-slate-50 via-white to-cyan-50/60 border-b border-strabon-border pb-12 pt-12 relative overflow-hidden backdrop-blur-xl"
+  >
+    <div
+      class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row gap-8 items-start relative z-10"
+    >
+      <div
+        class="w-32 h-32 rounded-2xl border border-white shadow-xl flex items-center justify-center bg-white/90 p-4 shrink-0 text-5xl text-strabon-primary"
+      >
+        <i id="p-logo-icon" class="fa-solid fa-building"></i>
+      </div>
+
+      <div class="flex-grow">
+        <div class="flex flex-wrap items-center gap-4 mb-3">
+          <h1
+            id="p-name"
+            class="text-4xl font-header font-bold text-strabon-primary"
+          >
+            Company Name
+          </h1>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <div id="p-badge" class="flex flex-wrap gap-2"></div>
+            <span
+              class="text-[11px] text-gray-400 uppercase tracking-wide"
+            >
+              Top Verified Company
+            </span>
+          </div>
+        </div>
+
+        <div
+          class="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-4"
+        >
+          <span id="p-type-tag" class="font-semibold text-gray-700">
+            Industrial Supplier
+          </span>
+          <span>•</span>
+          <span id="p-size-tag">100–250 employees</span>
+          <span>•</span>
+          <span id="p-year-tag">Founded 2012</span>
+        </div>
+
+        <p
+          id="p-tagline"
+          class="text-xl text-strabon-accent font-serif italic mb-2"
+        ></p>
+        <p
+          id="p-desc"
+          class="text-strabon-text text-lg mb-6 font-light max-w-3xl leading-relaxed"
+        >
+          Description
+        </p>
+
+        <div class="flex flex-wrap gap-4 text-sm">
+          <span
+            class="flex items-center gap-2 bg-white/70 px-4 py-2 rounded-full border border-gray-200 shadow-sm"
+          >
+            <i class="fa-solid fa-location-dot text-strabon-accent"></i>
+            <span id="p-city" class="font-semibold text-gray-700">City</span>
+          </span>
+
+          <span
+            class="flex items-center gap-2 bg-white/70 px-4 py-2 rounded-full border border-gray-200 shadow-sm"
+          >
+            <i class="fa-solid fa-layer-group text-strabon-accent"></i>
+            <span id="p-sector" class="capitalize font-semibold text-gray-700"
+              >Sector</span
+            >
+          </span>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-3 w-full md:w-auto shrink-0">
+        <button
+          onclick="openQuoteModal(document.getElementById('p-name').innerText)"
+          class="bg-strabon-primary text-white px-8 py-4 rounded-xl font-bold shadow-xl shadow-slate-900/10 hover:bg-strabon-accent transition text-sm flex items-center justify-center gap-2"
+        >
+          <i class="fa-solid fa-paper-plane"></i>
+          <span data-i18n="req_quote">REQUEST QUOTE</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <main
+    class="max-w-7xl mx-auto px-4 py-12 grid grid-cols-1 lg:grid-cols-3 gap-10"
+  >
+      <div class="lg:col-span-2 space-y-8">
+        <div
+    class="border-b border-gray-200 flex gap-1 text-xs font-bold text-gray-500 overflow-x-auto no-scrollbar"
+  >
+    <button
+      onclick="switchProfileTab('overview')"
+      id="tab-overview"
+      class="flex items-center gap-2 px-6 py-3 rounded-t-xl border-b-2 border-strabon-accent bg-cyan-50/50 transition whitespace-nowrap"
+    >
+      <i class="fa-solid fa-circle-info text-[11px]"></i>
+      <span data-i18n="tab_overview">OVERVIEW</span>
+    </button>
+
+    <button
+      onclick="switchProfileTab('projects')"
+      id="tab-projects"
+      class="flex items-center gap-2 px-6 py-3 rounded-t-xl border-b-2 border-transparent hover:bg-cyan-50/40 transition whitespace-nowrap"
+    >
+      <i class="fa-solid fa-diagram-project text-[11px]"></i>
+      <span data-i18n="tab_projects">PROJECTS</span>
+    </button>
+
+  <button
+    onclick="switchProfileTab('certs')"
+    id="tab-certs"
+    class="flex items-center gap-2 px-6 py-3 rounded-t-xl border-b-2 border-transparent hover:bg-cyan-50/40 transition whitespace-nowrap"
+  >
+    <i class="fa-solid fa-certificate text-[11px]"></i>
+    <span data-i18n="tab_certs">CERTIFICATES</span>
+  </button>
+
+    <button
+      onclick="switchProfileTab('assets')"
+      id="tab-assets"
+      class="flex items-center gap-2 px-6 py-3 rounded-t-xl border-b-2 border-transparent hover:bg-cyan-50/40 transition whitespace-nowrap"
+    >
+      <i class="fa-solid fa-truck-monster text-[11px]"></i>
+      <span data-i18n="tab_assets">ASSETS</span>
+    </button>
+  </div>
+
+
+        <div id="content-overview">
+          <h3
+            class="font-bold text-strabon-primary mb-4 font-header uppercase text-sm tracking-wider"
+            data-i18n="lbl_services"
+          >
+            Core Services
+          </h3>
+          <div
+            id="p-services-grid"
+            class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8"
+          ></div>
+        </div>
+
+        
+<div id="content-projects" class="hidden-view">
+  
+<div class="flex items-center justify-between mb-4">
+  <h3
+    class="font-bold text-strabon-primary font-header uppercase text-sm tracking-wider"
+    data-i18n="proj_key_ref"
+  >
+    Key Reference Projects
+  </h3>
+  <span
+    class="text-[11px] text-gray-400"
+    data-i18n="proj_selected_from_supplier"
+  >
+    Selected projects from this supplier
+  </span>
+</div>
+
+  <div
+    id="p-projects-list"
+    class="grid grid-cols-1 md:grid-cols-2 gap-4"
+  ></div>
+</div>
+
+<div id="content-certs" class="hidden-view">
+
+  <div class="flex items-center justify-between mb-4">
+    <h3
+      class="font-bold text-strabon-primary font-header uppercase text-sm tracking-wider"
+      data-i18n="certs_title"
+    >
+      Certifications & Compliance
+    </h3>
+    <span
+      class="text-[11px] text-gray-400"
+      data-i18n="certs_sub"
+    >
+      Declared certificates of this supplier
+    </span>
+  </div>
+
+  <div
+    id="p-certs-list"
+    class="grid grid-cols-1 md:grid-cols-2 gap-4"
+  >
+     </div>
+
+</div>
+
+        <div id="content-assets" class="hidden-view">
+  <div
+    class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm"
+  >
+    <div
+      class="flex flex-wrap items-center justify-between gap-3 px-6 pt-4 pb-3 border-b border-gray-100"
+    >
+      <div class="flex flex-wrap items-center gap-2 text-[11px] text-gray-600">
+        <span
+  class="font-semibold text-gray-500"
+  data-i18n="asset_categories"
+>
+  Asset categories:
+</span>
+        <span
+          class="px-2 py-1 rounded-full bg-slate-50 border border-slate-200"
+        >
+          Crushing &amp; Screening
+        </span>
+        <span
+          class="px-2 py-1 rounded-full bg-slate-50 border border-slate-200"
+        >
+          Haul Trucks
+        </span>
+        <span
+          class="px-2 py-1 rounded-full bg-slate-50 border border-slate-200"
+        >
+          Drilling Rigs
+        </span>
+        <span
+          class="px-2 py-1 rounded-full bg-slate-50 border border-slate-200"
+        >
+          Support Equipment
+        </span>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 text-[10px]">
+        <span
+          class="inline-flex items-center px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold"
+        >
+          <span class="mr-1">●</span> Available
+        </span>
+        <span
+          class="inline-flex items-center px-2 py-1 rounded-full bg-amber-50 text-amber-700 font-semibold"
+        >
+          <span class="mr-1">●</span> Under Maintenance
+        </span>
+        <span
+          class="inline-flex items-center px-2 py-1 rounded-full bg-rose-50 text-rose-700 font-semibold"
+        >
+          <span class="mr-1">●</span> Out of Service
+        </span>
+      </div>
+    </div>
+
+    <table class="min-w-full text-sm">
+
+              <thead
+                class="bg-gray-50 text-gray-500 uppercase font-bold text-xs"
+              >
+                <tr>
+                  <th
+                    class="py-4 px-6 text-left"
+                    data-i18n="th_item"
+                  >
+                    Item
+                  </th>
+                  <th
+                    class="py-4 px-6 text-left"
+                    data-i18n="th_specs"
+                  >
+                    Specs
+                  </th>
+                  <th
+                    class="py-4 px-6 text-left"
+                    data-i18n="th_status"
+                  >
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody
+                id="p-assets-list"
+                class="divide-y divide-gray-100"
+              ></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <div
+          class="bg-strabon-primary text-white rounded-2xl p-8 shadow-2xl relative overflow-hidden"
+        >
+          <div
+            class="absolute top-0 right-0 w-40 h-40 bg-strabon-accent opacity-20 rounded-full blur-3xl -mr-10 -mt-10"
+          ></div>
+          <h3
+            class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2"
+          >
+            Strabon Trust Score™
+          </h3>
+          <div class="flex items-end gap-3 mb-6">
+            <span
+              id="p-score"
+              class="text-6xl font-header font-bold text-white"
+              >98</span
+            >
+            <div class="flex flex-col mb-1.5">
+              <span class="text-sm text-gray-400">/100</span>
+              <span
+                id="p-score-label"
+                class="text-xs font-bold text-green-400"
+                >EXCELLENT</span
+              >
+            </div>
+          </div>
+          <div
+            class="w-full bg-gray-700 h-2 rounded-full overflow-hidden mb-4"
+          >
+            <div
+              id="p-score-bar"
+              class="bg-green-400 h-full shadow-[0_0_15px_rgba(74,222,128,0.6)]"
+              style="width: 98%"
+            ></div>
+          </div>
+          <div
+            class="text-[11px] text-gray-300 flex items-center gap-2 bg-white/5 p-3 rounded-lg mb-3"
+          >
+            <i
+              class="fa-solid fa-scale-balanced text-strabon-accent text-lg"
+            ></i>
+            <div data-i18n="score_info_main">
+              Calculated from verified references, delivery performance,
+              company age and digital signals.
+            </div>
+          </div>
+          <div
+            class="text-[10px] text-gray-400 flex items-center gap-2 bg-white/5 p-2 rounded-lg"
+          >
+            <i
+              class="fa-solid fa-shield-halved text-strabon-accent text-sm"
+            ></i>
+            <div data-i18n="score_info_verify">
+              Verified data can increase your score and ranking.
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div
+    id="modal-join"
+    class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50"
+  >
+    <div
+      class="modal-overlay absolute w-full h-full bg-slate-900/60 backdrop-blur-sm"
+    ></div>
+    <div
+      class="modal-container bg-white w-11/12 md:max-w-lg mx-auto rounded-2xl shadow-2xl z-50 overflow-y-auto max-h-[90vh] animate-fade-in"
+    >
+      <div class="py-8 px-8">
+        <div
+          class="flex justify-between items-center pb-4 border-b border-gray-100 mb-6"
+        >
+          <div>
+            <p
+              class="text-2xl font-header font-bold text-strabon-primary"
+              data-i18n="join_title"
+            >
+              Join the Network
+            </p>
+            <p
+              class="text-[11px] text-gray-500 mt-1"
+              data-i18n="join_desc"
+            >
+              Create your company profile. Verification usually takes 24
+              hours.
+            </p>
+          </div>
+          <div
+            class="cursor-pointer z-50"
+            onclick="toggleModal('modal-join')"
+          >
+            <i
+              class="fa-solid fa-xmark text-gray-400 hover:text-red-500 text-xl"
+            ></i>
+          </div>
+        </div>
+        <form
+          action="https://formspree.io/f/mqakpeoy"
+          method="POST"
+          class="space-y-5"
+        >
+          <input type="hidden" name="form_type" value="Join_Application" />
+          <div>
+            <label
+              class="block text-xs font-bold text-gray-600 mb-1.5"
+              data-i18n="field_company"
+              >Company Name</label
+            >
+            <input
+              type="text"
+              name="companyName"
+              class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none"
+              required
+            />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                class="block text-xs font-bold text-gray-600 mb-1.5"
+                data-i18n="field_sector"
+                >Sector</label
+              >
+              <select
+                name="sector"
+                class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none"
+              >
+                <option>Construction</option>
+                <option>Mining</option>
+                <option>Energy</option>
+                <option>Drilling</option>
+                <option>Equipment</option>
+              </select>
+            </div>
+            <div>
+              <label
+                class="block text-xs font-bold text-gray-600 mb-1.5"
+                data-i18n="field_city"
+                >City</label
+              >
+              <input
+                type="text"
+                name="location"
+                class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none"
+                required
+              />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                class="block text-xs font-bold text-gray-600 mb-1.5"
+                >Email</label
+              >
+              <input
+                type="email"
+                name="email"
+                class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none"
+                required
+              />
+            </div>
+            <div>
+              <label
+                class="block text-xs font-bold text-gray-600 mb-1.5"
+                data-i18n="field_website"
+                >Website</label
+              >
+              <input
+                type="text"
+                name="website"
+                class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none"
+                placeholder="https://"
+              />
+            </div>
+          </div>
+          <div>
+            <label
+              class="block text-xs font-bold text-gray-600 mb-1.5"
+              data-i18n="field_size"
+              >Company Size</label
+            >
+            <select
+              name="size"
+              class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none"
+            >
+              <option>1-10</option>
+              <option>11-50</option>
+              <option>51-250</option>
+              <option>251-1000</option>
+              <option>1000+</option>
+            </select>
+          </div>
+          <div>
+            <label
+              class="block text-xs font-bold text-gray-600 mb-1.5"
+              data-i18n="field_services"
+              >Core Services / Focus</label
+            >
+            <textarea
+              name="services"
+              rows="3"
+              class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none"
+              placeholder="EPC, underground mining, earthworks, heavy equipment rental..."
+            ></textarea>
+          </div>
+          <div>
+            <label
+              class="block text-xs font-bold text-gray-600 mb-1.5"
+              data-i18n="field_note"
+              >Additional Notes</label
+            >
+            <textarea
+              name="notes"
+              rows="3"
+              class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none"
+              placeholder="Share key references, projects or expectations."
+            ></textarea>
+          </div>
+          <div class="pt-2">
+            <button
+              type="submit"
+              class="w-full bg-strabon-primary text-white font-bold py-4 rounded-xl hover:bg-strabon-accent transition"
+              data-i18n="btn_submit"
+            >
+              SUBMIT APPLICATION
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div
+    id="modal-quote"
+    class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50"
+  >
+    <div
+      class="modal-overlay absolute w-full h-full bg-slate-900/60 backdrop-blur-sm"
+    ></div>
+    <div
+      class="modal-container bg-white w-11/12 md:max-w-md mx-auto rounded-2xl shadow-2xl z-50 overflow-y-auto max-h-[90vh] animate-fade-in"
+    >
+      <div class="py-8 px-8">
+        <div
+          class="flex justify-between items-center pb-4 border-b border-gray-100 mb-6"
+        >
+          <div class="flex flex-col">
+            <p
+              class="text-2xl font-header font-bold text-strabon-primary"
+              data-i18n="quote_title"
+            >
+              Request Quote
+            </p>
+            <p
+              class="text-xs text-strabon-accent font-bold mt-1"
+              id="quote-target-company"
+            >
+              Target Company
+            </p>
+          </div>
+          <div
+            class="cursor-pointer z-50"
+            onclick="toggleModal('modal-quote')"
+          >
+            <i
+              class="fa-solid fa-xmark text-gray-400 hover:text-red-500 text-xl"
+            ></i>
+          </div>
+        </div>
+        <form
+          action="https://formspree.io/f/mqakpeoy"
+          method="POST"
+          class="space-y-5"
+        >
+          <input type="hidden" name="form_type" value="Quote_Request" />
+          <input
+            type="hidden"
+            name="target_company"
+            id="input-target-company"
+          />
+          <div>
+            <label
+              class="block text-xs font-bold text-gray-600 mb-1.5"
+              data-i18n="field_your_name"
+              >Your Name</label
+            >
+            <input
+              type="text"
+              name="name"
+              class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none"
+              required
+            />
+          </div>
+          <div>
+            <label
+              class="block text-xs font-bold text-gray-600 mb-1.5"
+              >Email</label
+            >
+            <input
+              type="email"
+              name="email"
+              class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none"
+              required
+            />
+          </div>
+          <div>
+            <label
+              class="block text-xs font-bold text-gray-600 mb-1.5"
+              data-i18n="field_project"
+              >Project Details</label
+            >
+            <textarea
+              name="message"
+              rows="4"
+              class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none"
+              required
+            ></textarea>
+          </div>
+          <div class="pt-2">
+            <button
+              type="submit"
+              class="w-full bg-strabon-accent text-white font-bold py-4 rounded-xl hover:bg-blue-600 transition"
+              data-i18n="btn_send_quote"
+            >
+              SEND REQUEST
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <footer class="border-t border-gray-200 bg-white/80 mt-4">
+    <div
+      class="max-w-7xl mx-auto px-4 py-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-500"
+    >
+      <div class="flex items-center gap-2">
+        <span class="font-header font-bold text-strabon-primary text-sm"
+          >STRABON</span
+        >
+        <span
+          >© <span id="year-span"></span> ·
+          <span data-i18n="footer_rights">All rights reserved.</span></span
+        >
+      </div>
+      <div class="flex gap-4">
+        <a href="#" class="hover:text-strabon-primary" data-i18n="footer_about"
+          >About</a
+        >
+        <a
+          href="#"
+          class="hover:text-strabon-primary"
+          data-i18n="footer_pricing"
+          >Pricing</a
+        >
+        <a
+          href="#"
+          class="hover:text-strabon-primary"
+          data-i18n="footer_privacy"
+          >Privacy</a
+        >
+        <a
+          href="#"
+          class="hover:text-strabon-primary"
+          data-i18n="footer_terms"
+          >Terms</a
+        >
+      </div>
+    </div>
+  </footer>
+
+<!-- Partner Login Modal -->
+<div
+  id="login-modal"
+  class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50"
+>
+  <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm">
+    <h2 class="text-lg font-bold mb-4">Partner Login</h2>
+
+    <form id="login-form" class="space-y-3">
+      <div>
+        <label class="block text-sm mb-1">Email</label>
+        <input
+          type="email"
+          name="email"
+          required
+          class="w-full border rounded px-3 py-2 text-sm"
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm mb-1">Password</label>
+        <input
+          type="password"
+          name="password"
+          required
+          class="w-full border rounded px-3 py-2 text-sm"
+        />
+      </div>
+
+      <p id="login-error" class="text-xs text-red-500 hidden"></p>
+
+      <div class="flex justify-end gap-2 mt-4">
+        <button
+          type="button"
+          onclick="closeLoginModal()"
+          class="text-sm px-3 py-2"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="text-sm px-4 py-2 rounded bg-blue-600 text-white"
+        >
+          Login
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+  function openLoginModal() {
+    const modal = document.getElementById("login-modal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+  }
+
+  function closeLoginModal() {
+    const modal = document.getElementById("login-modal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+
+    const err = document.getElementById("login-error");
+    if (err) {
+      err.classList.add("hidden");
+      err.textContent = "";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("login-form");
+    if (!form) return;
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const data = new FormData(form);
+      const email = data.get("email");
+      const password = data.get("password");
+
+      const { data: authData, error } = await supabaseClient.auth
+        .signInWithPassword({ email, password });
+
+      const err = document.getElementById("login-error");
+
+      if (error) {
+        err.textContent = error.message || "Login failed";
+        err.classList.remove("hidden");
+        return;
+      }
+
+      // Login başarılı → modalı kapat ve editörü aç
+      closeLoginModal();
+      if (typeof showEditorView === "function") {
+        showEditorView();
+      }
+    });
+  });
+
+  async function partnerLogout() {
+    await supabaseClient.auth.signOut();
+    window.location.href = "/";
+  }
+</script>
+
+
+  <script>
+    const translations = {
+      en: {
+        hero_title:
+          "Source Smarter. <br> <span class='text-transparent bg-clip-text bg-gradient-to-r from-strabon-accent to-blue-600'>Build Faster.</span>",
+        hero_desc:
+          "Discover verified industrial companies, trust scores and real project references – all on a single screen.",
+        search_ph:
+          "Search companies, equipment or services... (e.g. EPC, mining, CAT, drilling)",
+        btn_discover: "DISCOVER",
+        join: "JOIN NETWORK",
+        tab_certs: "CERTIFICATES",
+        no_certs: "No certificates listed for this supplier.",
+        asset_categories: "Asset categories:",
+        join_title: "Join the Network",
+        proj_key_ref: "Key Reference Projects",
+        proj_selected_from_supplier: "Selected projects from this supplier",
+        join_desc:
+          "Create your company profile. Verification usually takes 24 hours.",
+        quote_title: "Request Quote",
+        btn_submit: "SUBMIT APPLICATION",
+        btn_send_quote: "SEND REQUEST",
+        back: "BACK TO LIST",
+        req_quote: "REQUEST QUOTE",
+        sec_all: "All Sectors",
+        sec_const: "Construction",
+        sec_mine: "Mining",
+        sec_energy: "Energy",
+        sec_drill: "Drilling",
+        sec_equip: "Equipment",
+        tab_overview: "OVERVIEW",
+        tab_projects: "PROJECTS",
+        tab_certs: "CERTIFICATES",
+        certs_title: "Certifications & Compliance",
+        certs_sub: "Declared certificates of this supplier",
+        tab_assets: "ASSETS",
+        lbl_services: "Core Services",
+        th_item: "Item",
+        th_specs: "Specs",
+        th_status: "Status",
+        btn_view: "INSPECT",
+        results_label: "Results",
+        live_db: "Live Database",
+        how_title: "How Strabon Works",
+        how_sub:
+          "Create your company profile, verify your references and let your Strabon Trust Score™ increase your visibility.",
+        how_step1_title: "Create your profile",
+        how_step1_desc:
+          "Add your company details, sectors, core services, assets and project highlights.",
+        how_step2_title: "Verify references",
+        how_step2_desc:
+          "Send verification requests to past clients and partners to build a verified track record.",
+        how_step3_title: "Grow with Trust Score™",
+        how_step3_desc:
+          "Higher Strabon Trust Scores mean higher visibility in search results and more qualified leads.",
+        pricing_title: "Pricing for Industrial Networks",
+        pricing_sub:
+          "Start free, then upgrade as your company grows. Every plan includes a public profile and access to the Strabon Trust Score™ framework.",
+        price_free_tag: "For small teams getting started.",
+        price_pro_tag: "For growth-focused industrial suppliers.",
+        price_ent_tag: "For EPCs and global industrial groups.",
+        price_month: "/month",
+        price_free_1: "Public company profile",
+        price_free_2: "Up to 3 listed services",
+        price_free_3: "Basic Strabon Trust Score™",
+        price_pro_1: "Unlimited services & assets",
+        price_pro_2: "Verified reference module",
+        price_pro_3: "Priority ranking in search",
+        price_pro_4: "Advanced Trust Score™ insights",
+        price_ent_1: "Multi-user access & SSO",
+        price_ent_2: "API access to supplier data",
+        price_ent_3: "Dedicated success manager",
+        price_ent_4: "Custom Trust Score™ models",
+        btn_get_started: "GET STARTED",
+        btn_choose_pro: "CHOOSE PRO",
+        btn_contact_sales: "CONTACT SALES",
+        badge_popular: "MOST POPULAR",
+        top_title: "Top Verified Companies by Trust Score",
+        top_sub: "Updated in real-time",
+        score_info_main:
+          "Calculated from verified references, delivery performance, company age and digital signals.",
+        score_info_verify:
+          "Verified data can increase your score and ranking.",
+        field_company: "Company Name",
+        field_sector: "Sector",
+        field_city: "City",
+        field_website: "Website",
+        field_size: "Company Size",
+        field_services: "Core Services / Focus",
+        field_note: "Additional Notes",
+        field_your_name: "Your Name",
+        field_project: "Project Details",
+        footer_rights: "All rights reserved.",
+        footer_about: "About",
+        footer_pricing: "Pricing",
+        footer_privacy: "Privacy",
+        footer_terms: "Terms",
+      },
+      tr: {
+        hero_title:
+          "Akıllı Kaynak. <br> <span class='text-transparent bg-clip-text bg-gradient-to-r from-strabon-accent to-blue-600'>Hızlı Çözüm.</span>",
+        hero_desc:
+          "Endüstriyel şirketleri tek ekranda toplayın; görünürlüklerini, güven skorlarını ve doğrulanmış referanslarını birlikte görün.",
+        search_ph:
+          "Firma, ekipman veya hizmet ara... (Örn: EPC, maden, CAT, sondaj)",
+        btn_discover: "KEŞFET",
+        join: "AĞA KATIL",
+        asset_categories: "Varlık kategorileri:",
+        proj_key_ref: "Öne Çıkan Referans Projeler",
+        proj_selected_from_supplier: "Bu tedarikçiden seçilmiş projeler",
+        join_title: "Ağa Katılın",
+        join_desc:
+          "Firma profilinizi oluşturun. Doğrulama genelde 24 saat sürer.",
+        quote_title: "Teklif İste",
+        btn_submit: "BAŞVURUYU GÖNDER",
+        btn_send_quote: "TALEBİ GÖNDER",
+        back: "LİSTEYE DÖN",
+        req_quote: "TEKLİF İSTE",
+        sec_all: "Tüm Sektörler",
+        sec_const: "İnşaat",
+        sec_mine: "Maden",
+        sec_energy: "Enerji",
+        sec_drill: "Sondaj",
+        sec_equip: "Ekipman",
+        tab_certs: "SERTİFİKALAR",
+        no_certs: "Bu tedarikçi için listelenen sertifika yok.",
+        sec_energy: "Enerji",
+        sec_drill: "Sondaj",
+        sec_equip: "Ekipman",
+        tab_certs: "SERTİFİKALAR",
+        tab_overview: "GENEL BAKIŞ",
+        tab_projects: "PROJELER",
+        tab_assets: "VARLIKLAR",
+        lbl_services: "Hizmetler",
+        th_item: "Ekipman",
+        th_specs: "Özellik",
+        th_status: "Durum",
+        btn_view: "İNCELE",
+        results_label: "Sonuç",
+        live_db: "Canlı Veritabanı",
+        certs_title: "Sertifikalar ve Uyum",
+        certs_sub: "Bu tedarikçinin beyan ettiği sertifikalar",
+        how_title: "Strabon Nasıl Çalışır?",
+        how_sub:
+          "Firma profilinizi oluşturun, referanslarınızı doğrulatın ve Strabon Trust Score™ ile görünürlüğünüzü artırın.",
+        how_step1_title: "Profilinizi oluşturun",
+        how_step1_desc:
+          "Firma bilgilerinizi, sektörlerinizi, temel hizmetlerinizi, varlıklarınızı ve öne çıkan projelerinizi ekleyin.",
+        how_step2_title: "Referansları doğrulayın",
+        how_step2_desc:
+          "Geçmiş iş ortaklarınıza doğrulama isteği göndererek doğrulanmış bir geçmiş oluşturun.",
+        how_step3_title: "Trust Score™ ile büyüyün",
+        how_step3_desc:
+          "Yüksek Strabon Trust Score, arama sonuçlarında daha yüksek görünürlük ve daha nitelikli talepler demektir.",
+        pricing_title: "Endüstriyel Ağlar için Fiyatlandırma",
+        pricing_sub:
+          "Ücretsiz başlayın, şirketiniz büyüdükçe yükseltin. Tüm paketlerde herkese açık profil ve Strabon Trust Score™ altyapısı dahildir.",
+        price_free_tag: "Yeni başlayan küçük ekipler için.",
+        price_pro_tag: "Büyüme odaklı tedarikçiler için.",
+        price_ent_tag: "EPC'ler ve global endüstriyel gruplar için.",
+        price_month: "/ay",
+        price_free_1: "Herkese açık firma profili",
+        price_free_2: "En fazla 3 hizmet girişi",
+        price_free_3: "Temel Strabon Trust Score™",
+        price_pro_1: "Sınırsız hizmet ve varlık girişi",
+        price_pro_2: "Doğrulanmış referans modülü",
+        price_pro_3: "Aramalarda öncelikli sıralama",
+        price_pro_4: "Gelişmiş Trust Score™ içgörüleri",
+        price_ent_1: "Çok kullanıcılı erişim ve SSO",
+        price_ent_2: "Tedarikçi verisine API erişimi",
+        price_ent_3: "Özel müşteri yöneticisi",
+        price_ent_4: "Kuruma özel Trust Score™ modelleri",
+        btn_get_started: "BAŞLA",
+        btn_choose_pro: "PRO PAKETİ SEÇ",
+        btn_contact_sales: "SATIŞ ile İLETİŞİME GEÇ",
+        badge_popular: "EN POPÜLER",
+        top_title: "Trust Score'a Göre Öne Çıkan Firmalar",
+        top_sub: "Gerçek zamanlı güncellenir",
+        score_info_main:
+          "Doğrulanmış referanslar, teslimat performansı, şirket yaşı ve dijital sinyallerden hesaplanır.",
+        score_info_verify:
+          "Doğrulanmış veriler skorunuzu ve sıralamanızı artırabilir.",
+        field_company: "Firma Adı",
+        field_sector: "Sektör",
+        field_city: "Şehir",
+        field_website: "Web Sitesi",
+        field_size: "Firma Büyüklüğü",
+        field_services: "Temel Hizmetler / Odak Alanı",
+        field_note: "Ek Notlar",
+        field_your_name: "İsminiz",
+        field_project: "Proje Detayları",
+        footer_rights: "Tüm hakları saklıdır.",
+        footer_about: "Hakkında",
+        footer_pricing: "Fiyatlandırma",
+        footer_privacy: "Gizlilik",
+        footer_terms: "Şartlar",
+      },
+    };
+
+    let currentLang = "en";
+    let currentSector = "all";
+    let selectedCompany = null;
+
+    // Top band animasyon & canlı görünüm için
+    let topCompaniesOrder = [];
+    let topScrollInterval = null;
+    let topRotateInterval = null;
+
+    // Ana grid için hafif "canlılık" (boş aramada hafif shuffle)
+    let gridShuffleInterval = null;
+
+    // *** DATABASE: TAM LİSTE ***
+    const database = [
+      {
+        id: 101,
+        name: "Rönesans Holding",
+        city: "Ankara, TR",
+        sector: "construction",
+        type: "contractor",
+        trust: "global",
+        meta: {
+          references: 96,
+          delivery: 94,
+          years: 90,
+          financial: 92,
+          digital: 85,
+        },
+        desc:
+          "Global contractor in large-scale infrastructure, industrial and healthcare projects.",
+        desc_tr:
+          "Büyük ölçekli altyapı, endüstriyel tesis ve sağlık projelerinde faaliyet gösteren global yüklenici.",
+        services: ["EPC Contracts", "Healthcare Projects", "Industrial Facilities"],
+        services_tr: ["EPC Sözleşmeleri", "Sağlık Projeleri", "Endüstriyel Tesisler"],
+        certificates: ["ISO 9001:2015", "ISO 14001:2015", "ISO 45001:2018", "LEED Platinum"],
+        projects: [
+          {
+            title: "Yamal LNG",
+            title_tr: "Yamal LNG",
+            loc: "Russia",
+            loc_tr: "Rusya",
+            desc: "Mega-scale LNG plant project in the Arctic region.",
+            desc_tr: "Arktik bölgede mega ölçekli LNG tesis projesi.",
+          },
+        ],
+        assets: [
+          {
+            type: "Tower Crane Fleet",
+            type_tr: "Kule vinç filosu",
+            spec: "Liebherr & Terex, >30 units",
+            spec_tr: "Liebherr & Terex, 30+ ünite",
+            status: "Available",
+            status_tr: "Müsait",
+          },
+        ],
+      },
+      {
+        id: 102,
+        name: "Bechtel Corporation",
+        city: "USA",
+        sector: "construction",
+        type: "contractor",
+        trust: "global",
+        meta: {
+          references: 98,
+          delivery: 96,
+          years: 95,
+          financial: 95,
+          digital: 88,
+        },
+        desc:
+          "US-based engineering and construction company delivering complex megaprojects worldwide.",
+        desc_tr:
+          "Dünya genelinde karmaşık mega projeler gerçekleştiren ABD merkezli mühendislik ve inşaat şirketi.",
+        certificates: ["ASME N-Stamp", "ISO 9001", "ISO 14001", "OSHA VPP Star"],
+        services: ["Nuclear Power", "Infrastructure EPC", "Rail & Transit"],
+        services_tr: [
+          "Nükleer enerji santralleri",
+          "Altyapı EPC projeleri",
+          "Demiryolu ve ulaşım projeleri",
+        ],
+        projects: [
+          {
+            title: "Hoover Dam",
+            title_tr: "Hoover Barajı",
+            loc: "USA",
+            loc_tr: "ABD",
+            desc: "Iconic hydroelectric dam and infrastructure project.",
+            desc_tr: "İkonik hidroelektrik baraj ve altyapı projesi.",
+          },
+        ],
+        assets: [],
+      },
+      {
+        id: 103,
+        name: "Rio Tinto",
+        city: "UK/AUS",
+        sector: "mining",
+        type: "operator",
+        trust: "global",
+        meta: {
+          references: 97,
+          delivery: 94,
+          years: 95,
+          financial: 96,
+          digital: 82,
+        },
+        desc:
+          "Global mining corporation with diversified portfolio across iron ore, copper and more.",
+        desc_tr:
+          "Demir cevheri, bakır ve diğer emtialarda çeşitlendirilmiş portföye sahip global madencilik şirketi.",
+        services: ["Copper Operations", "Iron Ore", "Project Development"],
+        services_tr: ["Bakır işletmeleri", "Demir cevheri", "Proje geliştirme"],
+        certificates: ["The Copper Mark", "ICMM Member", "ISO 14001", "TSM Protocol"],
+        projects: [
+          {
+            title: "Oyu Tolgoi",
+            title_tr: "Oyu Tolgoi",
+            loc: "Mongolia",
+            loc_tr: "Moğolistan",
+            desc: "World-class copper-gold mine development.",
+            desc_tr: "Dünya ölçeğinde bakır-altın madeni geliştirme projesi.",
+          },
+        ],
+        assets: [],
+      },
+      {
+        id: 104,
+        name: "Schlumberger",
+        city: "USA/FR",
+        sector: "drilling",
+        type: "tech",
+        trust: "global",
+        meta: {
+          references: 94,
+          delivery: 93,
+          years: 90,
+          financial: 92,
+          digital: 90,
+        },
+        desc:
+          "Technology leader in oilfield services, digital solutions and subsurface data.",
+        desc_tr:
+          "Sondaj ve petrol sahası hizmetleri, dijital çözümler ve yeraltı verilerinde teknoloji lideri.",
+        services: ["Directional Drilling", "Digital Oilfield", "Well Logging"],
+        services_tr: [
+          "Yönlü sondaj hizmetleri",
+          "Dijital petrol sahası çözümleri",
+          "Kuyu loglama hizmetleri",
+        ],
+        certificates: ["API Spec Q1", "API Spec Q2", "ISO 27001", "ISO 14001"],
+        projects: [],
+        assets: [],
+      },
+      {
+        id: 105,
+        name: "Demir Export",
+        city: "Ankara, TR",
+        sector: "mining",
+        type: "operator",
+        trust: "verified",
+        meta: {
+          references: 90,
+          delivery: 88,
+          years: 85,
+          financial: 86,
+          digital: 75,
+        },
+        desc:
+          "Turkish mining operator focused on gold, iron and base metals.",
+        desc_tr:
+          "Altın, demir ve baz metaller odaklı faaliyet gösteren Türk madencilik şirketi.",
+        services: ["Gold Mining", "Iron Ore", "Feasibility & Development"],
+        services_tr: [
+          "Altın madenciliği",
+          "Demir cevheri üretimi",
+          "Fizibilite ve geliştirme",
+        ],
+        certificates: ["ISO 50001", "ISO 14001", "ISO 45001", "Gold Standard"],
+        projects: [
+          {
+            title: "Bakırtepe",
+            title_tr: "Bakırtepe",
+            loc: "Sivas, TR",
+            loc_tr: "Sivas, Türkiye",
+            desc: "Gold mine operation and development.",
+            desc_tr: "Altın madeni işletmesi ve geliştirme projesi.",
+          },
+        ],
+        assets: [],
+      },
+      {
+        id: 106,
+        name: "Siemens Energy",
+        city: "Germany",
+        sector: "energy",
+        type: "tech",
+        trust: "verified",
+        meta: {
+          references: 95,
+          delivery: 93,
+          years: 92,
+          financial: 94,
+          digital: 88,
+        },
+        desc:
+          "Energy technology company delivering turbines, grid solutions and services.",
+        desc_tr:
+          "Türbinler, şebeke çözümleri ve servis hizmetleri sunan enerji teknolojileri şirketi.",
+        services: ["Gas Turbines", "Grid Solutions", "Service & Maintenance"],
+        services_tr: [
+          "Gaz türbinleri",
+          "Şebeke çözümleri",
+          "Servis ve bakım hizmetleri",
+        ],
+        certificates: ["ISO 50001", "ISO 27001", "IEC 62443", "ISO 9001"],
+        projects: [],
+        assets: [],
+      },
+      {
+        id: 107,
+        name: "Borusan CAT",
+        city: "Istanbul, TR",
+        sector: "equipment",
+        type: "manufacturer",
+        trust: "verified",
+        meta: {
+          references: 92,
+          delivery: 90,
+          years: 88,
+          financial: 87,
+          digital: 80,
+        },
+        desc:
+          "Authorized CAT dealer for heavy equipment sales, rental and service.",
+        desc_tr:
+          "Ağır iş makineleri satış, kiralama ve servisinde yetkili CAT distribütörü.",
+        services: ["Equipment Sales", "Rental Fleet", "After-Sales Service"],
+        services_tr: [
+          "Makina satışı",
+          "Kiralama filosu",
+          "Satış sonrası servis",
+        ],
+        certificates: ["Caterpillar 5-Star Dealer", "ISO 9001", "ISO 27001", "ISO 14001"],
+        projects: [],
+        assets: [
+          {
+            type: "CAT Excavator Fleet",
+            type_tr: "CAT ekskavatör filosu",
+            spec: "CAT 336 / 352",
+            spec_tr: "CAT 336 / 352",
+            status: "In Stock",
+            status_tr: "Stokta",
+          },
+        ],
+      },
+      {
+        id: 108,
+        name: "Ortadoğu Sondaj",
+        city: "Ankara, TR",
+        sector: "drilling",
+        type: "contractor",
+        trust: "emerging",
+        meta: {
+          references: 88,
+          delivery: 86,
+          years: 82,
+          financial: 80,
+          digital: 72,
+        },
+        desc:
+          "Drilling contractor specialized in core drilling and geothermal exploration.",
+        desc_tr:
+          "Karot sondajı ve jeotermal arama projelerinde uzman sondaj yüklenicisi.",
+        services: ["Core Drilling", "Geothermal Wells", "Exploration Support"],
+        services_tr: [
+          "Karot sondajı",
+          "Jeotermal kuyu açma",
+          "Arama saha desteği",
+        ],
+        certificates: ["ISO 9001:2015", "ISO 14001:2015", "OHSAS 18001"],
+        projects: [],
+        assets: [],
+      },
+      {
+        id: 109,
+        name: "Enka İnşaat",
+        city: "Istanbul, TR",
+        sector: "construction",
+        type: "contractor",
+        trust: "global",
+        meta: {
+          references: 97,
+          delivery: 95,
+          years: 93,
+          financial: 94,
+          digital: 86,
+        },
+        desc:
+          "Engineering and construction company active in power, infrastructure and industrial plants.",
+        desc_tr:
+          "Enerji santralleri, altyapı ve endüstriyel tesis projelerinde faaliyet gösteren mühendislik ve inşaat şirketi.",
+        services: ["Power Plants", "Infrastructure EPC", "Industrial Projects"],
+        services_tr: [
+          "Enerji santrali projeleri",
+          "Altyapı EPC projeleri",
+          "Endüstriyel tesis projeleri",
+        ],
+        certificates: ["ASME S/U/PP Stamps", "ISO 9001", "ISO 14001", "OHSAS 18001"],
+        projects: [],
+        assets: [],
+      },
+      {
+        id: 110,
+        name: "Sandvik Mining",
+        city: "Sweden",
+        sector: "equipment",
+        type: "manufacturer",
+        trust: "premium",
+        meta: {
+          references: 95,
+          delivery: 93,
+          years: 91,
+          financial: 92,
+          digital: 84,
+        },
+        desc:
+          "Manufacturer of mining equipment including crushers and underground drills.",
+        desc_tr:
+          "Kırıcılar ve yeraltı delici makineler dahil madencilik ekipmanları üreticisi.",
+        services: ["Crushers", "Underground Drills", "OEM Parts"],
+        services_tr: [
+          "Kırıcı ekipmanlar",
+          "Yeraltı delici makineler",
+          "Orijinal yedek parça (OEM)",
+        ],
+        certificates: ["ISO 9001", "CE Marking", "EcoVadis Gold", "ISO 45001"],
+        projects: [],
+        assets: [],
+      },
+      {
+        id: 111,
+        name: "HİDROMEK",
+        city: "Ankara, TR",
+        sector: "equipment",
+        type: "manufacturer",
+        trust: "verified",
+        meta: {
+          references: 90,
+          delivery: 88,
+          years: 86,
+          financial: 85,
+          digital: 78,
+        },
+        desc:
+          "Construction machinery manufacturer with backhoe loaders and motor graders.",
+        desc_tr:
+          "Kazıcı yükleyici ve greyder üretiminde uzman inşaat makinaları üreticisi.",
+        services: ["Backhoe Loaders", "Motor Graders", "Excavators"],
+        services_tr: [
+          "Kazıcı yükleyiciler",
+          "Greyderler",
+          "Ekskavatörler",
+        ],
+        certificates: ["ISO 9001", "TSE-ISO-EN 9000", "Turquality"],
+        projects: [],
+        assets: [],
+      },
+    ];
+
+    function t(key) {
+      return translations[currentLang][key] || translations.en[key] || "";
+    }
+
+    function computeScore(meta) {
+      const sum =
+        meta.references +
+        meta.delivery +
+        meta.years +
+        meta.financial +
+        meta.digital;
+      return Math.round(sum / 5);
+    }
+
+    function getTrustBadge(company) {
+      const trust = company.trust || "verified";
+      let label = "";
+      let classes =
+        "bg-gray-100 text-gray-700 border border-gray-200";
+
+      if (trust === "global") {
+        label = "Global Partner";
+        classes = "bg-blue-50 text-blue-800 border border-blue-200";
+      } else if (trust === "premium") {
+        label = "Premium Verified";
+        classes = "bg-purple-50 text-purple-800 border border-purple-200";
+      } else if (trust === "verified") {
+        label = "Verified Partner";
+        classes = "bg-emerald-50 text-emerald-800 border border-emerald-200";
+      } else if (trust === "emerging") {
+        label = "Emerging Partner";
+        classes = "bg-amber-50 text-amber-800 border border-amber-200";
+      }
+
+      return `
+        <span class="${classes} text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
+          <i class="fa-solid fa-shield-halved text-[10px]"></i>
+          <span>${label}</span>
+        </span>
+      `;
+    }
+
+    function getScoreLabel(score) {
+      if (currentLang === "tr") {
+        if (score >= 95) return "MÜKEMMEL";
+        if (score >= 90) return "GÜÇLÜ";
+        if (score >= 80) return "SAĞLAM";
+        return "GELİŞMEKTE";
+      } else {
+        if (score >= 95) return "EXCELLENT";
+        if (score >= 90) return "STRONG";
+        if (score >= 80) return "SOLID";
+        return "GROWING";
+      }
+    }
+
+    function sectorToTr(sector) {
+      if (sector === "construction") return "İnşaat";
+      if (sector === "mining") return "Maden";
+      if (sector === "energy") return "Enerji";
+      if (sector === "drilling") return "Sondaj";
+      if (sector === "equipment") return "Ekipman";
+      return sector;
+    }
+
+    function applyTranslations() {
+      document.querySelectorAll("[data-i18n]").forEach((el) => {
+        const key = el.getAttribute("data-i18n");
+        if (!key) return;
+        const value = t(key);
+        if (value) {
+          el.innerHTML = value;
+        }
+      });
+
+      const heroTitle = document.getElementById("hero-title");
+      const heroDesc = document.getElementById("hero-desc");
+      if (heroTitle) heroTitle.innerHTML = t("hero_title");
+      if (heroDesc) heroDesc.innerHTML = t("hero_desc");
+
+      const searchInput = document.getElementById("search-input");
+      if (searchInput) searchInput.placeholder = t("search_ph");
+
+      const yearSpan = document.getElementById("year-span");
+      if (yearSpan) yearSpan.textContent = new Date().getFullYear().toString();
+    }
+
+    // TOP COMPANIES BAND
+
+    function initTopCompaniesOrder() {
+      topCompaniesOrder = [...database].sort(
+        (a, b) => computeScore(b.meta) - computeScore(a.meta)
+      );
+    }
+
+    function renderTopCompanies() {
+      const container = document.getElementById("top-companies");
+      if (!container) return;
+      container.innerHTML = "";
+
+      if (!topCompaniesOrder.length) {
+        initTopCompaniesOrder();
+      }
+
+      const top = topCompaniesOrder.slice(0, 5);
+
+      top.forEach((company) => {
+        const score = computeScore(company.meta);
+        const desc =
+          currentLang === "tr" && company.desc_tr
+            ? company.desc_tr
+            : company.desc;
+
+        const card = document.createElement("button");
+        card.className =
+          "min-w-[220px] bg-slate-900 text-white rounded-xl px-4 py-3 flex flex-col justify-between shadow-md hover:shadow-lg hover:-translate-y-0.5 transition transform";
+        card.onclick = () => openProfile(company.id);
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-[11px] font-bold line-clamp-1">
+              ${company.name}
+            </span>
+            <span class="text-[11px] font-semibold bg-white/10 px-2 py-0.5 rounded-full">
+              ${score}/100
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-300 line-clamp-2 mb-2">
+            ${desc}
+          </p>
+          <div class="flex items-center justify-between mt-auto">
+            <span class="flex items-center gap-1 text-[11px] text-cyan-300">
+              <i class="fa-solid fa-location-dot text-cyan-400"></i>
+              <span class="line-clamp-1">${company.city}</span>
+            </span>
+            <span class="text-[10px] font-bold text-emerald-300">
+              ${getScoreLabel(score)}
+            </span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function rotateTopCompanies() {
+      if (!topCompaniesOrder.length) return;
+      const first = topCompaniesOrder.shift();
+      topCompaniesOrder.push(first);
+      renderTopCompanies();
+    }
+
+    function startTopAnimations() {
+      const container = document.getElementById("top-companies");
+      if (!container) return;
+
+      if (topScrollInterval) clearInterval(topScrollInterval);
+      if (topRotateInterval) clearInterval(topRotateInterval);
+
+      // Yumuşak kayma – gözü yormayacak hız
+      topScrollInterval = setInterval(() => {
+        if (!container) return;
+        container.scrollLeft += 1;
+        if (
+          container.scrollLeft >=
+          container.scrollWidth - container.clientWidth - 1
+        ) {
+          container.scrollLeft = 0;
+        }
+      }, 40); // 40ms → yavaş, sakin kayma
+
+      // 10 saniyede bir şirketleri canlı biçimde döndür
+      topRotateInterval = setInterval(() => {
+        rotateTopCompanies();
+      }, 10000);
+    }
+
+    // MAIN GRID
+
+    function renderCards(searchQuery = "") {
+      const container = document.getElementById("card-container");
+      const resultCount = document.getElementById("result-count");
+      if (!container) return;
+      container.innerHTML = "";
+
+      const query = (searchQuery || "").toLowerCase().trim();
+
+      let filtered = database.filter((company) => {
+        if (currentSector !== "all" && company.sector !== currentSector) {
+          return false;
+        }
+
+        if (!query) return true;
+
+        const desc =
+          currentLang === "tr" && company.desc_tr
+            ? company.desc_tr
+            : company.desc;
+
+        const services =
+          currentLang === "tr" && company.services_tr
+            ? company.services_tr
+            : company.services;
+
+        const haystack = [
+          company.name,
+          company.city,
+          company.sector,
+          desc,
+          ...(services || []),
+        ]
+          .join(" ")
+          .toLowerCase();
+
+        return haystack.includes(query);
+      });
+
+      if (resultCount) {
+        resultCount.textContent = `${filtered.length} ${t("results_label")}`;
+      }
+
+      if (filtered.length === 0) {
+        const empty = document.createElement("div");
+        empty.className =
+          "col-span-full text-center text-sm text-gray-500";
+        empty.textContent =
+          currentLang === "tr"
+            ? "Kriterlere uygun firma bulunamadı."
+            : "No companies match the selected filters.";
+        container.appendChild(empty);
+        return;
+      }
+
+      filtered.forEach((company) => {
+        const score = computeScore(company.meta);
+        const desc =
+          currentLang === "tr" && company.desc_tr
+            ? company.desc_tr
+            : company.desc;
+
+        const services =
+          currentLang === "tr" && company.services_tr
+            ? company.services_tr
+            : company.services;
+
+        const card = document.createElement("div");
+        card.className =
+          "bg-white/90 border border-gray-100 rounded-2xl p-5 shadow-glass flex flex-col justify-between hover:border-strabon-accent hover:shadow-lg hover:-translate-y-1 transition cursor-pointer";
+        card.onclick = () => openProfile(company.id);
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div>
+              <h3 class="text-sm font-bold text-strabon-primary mb-0.5 line-clamp-1">
+                ${company.name}
+              </h3>
+              <p class="text-[11px] text-gray-400 mb-1 line-clamp-1">
+                ${company.city}
+              </p>
+            </div>
+            <div class="text-right">
+              <div class="text-xs font-header font-bold text-strabon-primary leading-none">
+                ${score}<span class="text-[10px] text-gray-400">/100</span>
+              </div>
+              <div class="text-[10px] text-emerald-500 font-semibold mt-0.5">
+                ${getScoreLabel(score)}
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-600 mb-3 line-clamp-3">
+            ${desc}
+          </p>
+          <div class="flex flex-wrap gap-1.5 mb-3">
+            ${(services || [])
+              .slice(0, 3)
+              .map(
+                (s) => `
+              <span class="text-[10px] px-2 py-1 rounded-full bg-slate-50 border border-slate-200 text-slate-600">
+                ${s}
+              </span>
+            `
+              )
+              .join("")}
+          </div>
+          <div class="flex items-center justify-between mt-auto pt-2 border-t border-slate-100">
+            <div class="flex items-center gap-2">
+              ${getTrustBadge(company)}
+            </div>
+            <button
+              class="text-[11px] font-bold text-strabon-accent flex items-center gap-1"
+              type="button"
+            >
+              <span>${t("btn_view")}</span>
+              <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Hafif "canlılık": sadece default durumda (tüm sektörler + boş arama) diziyi shuffle et
+    function startGridShuffle() {
+      const searchInput = document.getElementById("search-input");
+
+      if (gridShuffleInterval) clearInterval(gridShuffleInterval);
+
+      gridShuffleInterval = setInterval(() => {
+        if (!searchInput) return;
+        const query = (searchInput.value || "").trim();
+        if (query !== "" || currentSector !== "all") {
+          return; // kullanıcı filtre kullanıyorsa karışmasın
+        }
+
+        // Rastgele hafif karıştır
+        database.sort(() => Math.random() - 0.5);
+        renderCards("");
+      }, 15000); // 15 sn'de bir hafif değişim
+    }
+
+    function filterSector(sector, btnEl) {
+      currentSector = sector;
+
+      document.querySelectorAll(".filter-btn").forEach((btn) => {
+        btn.classList.remove(
+          "border-strabon-accent",
+          "bg-strabon-accent/10",
+          "text-strabon-accent",
+          "shadow-glow"
+        );
+        btn.classList.add(
+          "border-gray-300",
+          "bg-transparent",
+          "text-gray-500"
+        );
+      });
+
+      if (btnEl) {
+        btnEl.classList.remove(
+          "border-gray-300",
+          "bg-transparent",
+          "text-gray-500"
+        );
+        btnEl.classList.add(
+          "border-strabon-accent",
+          "bg-strabon-accent/10",
+          "text-strabon-accent",
+          "shadow-glow"
+        );
+      }
+
+      const searchInput = document.getElementById("search-input");
+      const value = searchInput ? searchInput.value : "";
+      renderCards(value);
+    }
+    // Status badge renkleri (Available / Under Maintenance / Out of Service)
+    function getStatusBadge(baseStatusRaw, displayStatus) {
+      const base = (baseStatusRaw || "").toLowerCase();
+      const disp = (displayStatus || baseStatusRaw || "").toLowerCase();
+
+      let classes = "bg-slate-50 text-slate-600";
+
+      // Available / Müsait → Yeşil
+      if (base.includes("available") || disp.includes("müsait")) {
+        classes = "bg-emerald-50 text-emerald-700";
+      }
+      // Under Maintenance / bakım → Sarı
+      else if (
+        base.includes("maintenance") ||
+        base.includes("maint") ||
+        disp.includes("bakım")
+      ) {
+        classes = "bg-amber-50 text-amber-700";
+      }
+      // Out of Service / Servis dışı → Kırmızı
+      else if (
+        base.includes("out of service") ||
+        base.includes("oos") ||
+        disp.includes("servis dışı")
+      ) {
+        classes = "bg-rose-50 text-rose-700";
+      }
+
+      const label = displayStatus || baseStatusRaw || "";
+
+      return `
+        <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-semibold ${classes}">
+          ${label}
+        </span>
+      `;
+    }
+
+    // --- CERTIFICATES (Dynamic) ---
+    function renderCertificates(company) {
+      const certList = document.getElementById("p-certs-list");
+      if (!certList) return;
+      
+      certList.innerHTML = "";
+
+      if (!company.certificates || company.certificates.length === 0) {
+        certList.innerHTML = `
+          <div class="col-span-2 bg-white border border-gray-200 rounded-xl p-5 text-gray-500 text-sm italic">
+            ${t("no_certs")}
+          </div>`;
+        return;
+      }
+
+      company.certificates.forEach(cert => {
+        certList.innerHTML += `
+          <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm flex items-center gap-3 hover:shadow-md transition">
+            <div class="w-8 h-8 rounded-lg bg-cyan-50 flex items-center justify-center shrink-0">
+               <i class="fa-solid fa-award text-cyan-600 text-sm"></i>
+            </div>
+            <div class="text-strabon-primary font-bold text-sm">
+              ${cert}
+            </div>
+          </div>`;
+      });
+    }
+
+    function openProfile(companyId) {
+      const company = database.find((c) => c.id === companyId);
+      if (!company) return;
+      selectedCompany = company;
+
+      const viewDashboard = document.getElementById("view-dashboard");
+      const viewProfile = document.getElementById("view-profile");
+      const viewEditor = document.getElementById("view-editor"); // Editor
+      const backBtn = document.getElementById("back-btn");
+
+      if (viewDashboard) viewDashboard.classList.add("hidden-view");
+      if (viewEditor) viewEditor.classList.add("hidden-view"); // Hide editor if open
+      if (viewProfile) viewProfile.classList.remove("hidden-view");
+      if (backBtn) backBtn.classList.remove("hidden", "hidden-view");
+      window.scrollTo(0, 0);
+
+      const nameEl = document.getElementById("p-name");
+      const descEl = document.getElementById("p-desc");
+      const taglineEl = document.getElementById("p-tagline");
+      const cityEl = document.getElementById("p-city");
+      const sectorEl = document.getElementById("p-sector");
+      const badgeEl = document.getElementById("p-badge");
+
+      if (nameEl) nameEl.textContent = company.name;
+      if (cityEl) cityEl.textContent = company.city;
+      if (sectorEl)
+        sectorEl.textContent =
+          currentLang === "tr"
+            ? sectorToTr(company.sector)
+            : company.sector.charAt(0).toUpperCase() +
+              company.sector.slice(1);
+
+      const desc =
+        currentLang === "tr" && company.desc_tr
+          ? company.desc_tr
+          : company.desc;
+      if (descEl) descEl.textContent = desc;
+      if (taglineEl) taglineEl.textContent = company.tagline || "";
+
+      if (badgeEl) badgeEl.innerHTML = getTrustBadge(company);
+
+      const score = computeScore(company.meta);
+      const pScore = document.getElementById("p-score");
+      const pScoreLabel = document.getElementById("p-score-label");
+      const pScoreBar = document.getElementById("p-score-bar");
+
+      if (pScore) pScore.textContent = score.toString();
+      if (pScoreLabel) pScoreLabel.textContent = getScoreLabel(score);
+      if (pScoreBar) pScoreBar.style.width = `${score}%`;
+
+      const servicesGrid = document.getElementById("p-services-grid");
+      if (servicesGrid) {
+        servicesGrid.innerHTML = "";
+        const services =
+          currentLang === "tr" && company.services_tr
+            ? company.services_tr
+            : company.services || [];
+        if (services.length === 0) {
+          servicesGrid.innerHTML =
+            '<p class="text-xs text-gray-500">No services listed.</p>';
+        } else {
+          services.forEach((s) => {
+            const div = document.createElement("div");
+            div.className =
+              "bg-white border border-gray-100 rounded-xl p-3 text-xs text-gray-700 flex items-center gap-2";
+            div.innerHTML = `
+              <i class="fa-solid fa-circle-dot text-strabon-accent text-[10px]"></i>
+              <span>${s}</span>
+            `;
+            servicesGrid.appendChild(div);
+          });
+        }
+      }
+
+      const pProjectsList = document.getElementById("p-projects-list");
+      if (pProjectsList) {
+        pProjectsList.innerHTML = "";
+        const projects = company.projects || [];
+        if (projects.length === 0) {
+          pProjectsList.innerHTML =
+            '<p class="text-xs text-gray-500">' +
+            (currentLang === "tr"
+              ? "Kayıtlı proje bulunmuyor."
+              : "No projects listed.") +
+            "</p>";
+        } else {
+          projects.forEach((p) => {
+            const title =
+              currentLang === "tr" && p.title_tr ? p.title_tr : p.title;
+            const loc =
+              currentLang === "tr" && p.loc_tr ? p.loc_tr : p.loc;
+            const desc =
+              currentLang === "tr" && p.desc_tr ? p.desc_tr : p.desc;
+
+            const card = document.createElement("div");
+            card.className =
+              "bg-white/90 border border-gray-100 rounded-2xl p-4 shadow-glass flex flex-col gap-3 hover:-translate-y-0.5 hover:shadow-md hover:border-strabon-accent transition";
+
+            card.innerHTML = `
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex items-start gap-3">
+                  <div class="mt-0.5 w-8 h-8 rounded-xl bg-cyan-50 flex items-center justify-center">
+                    <i class="fa-solid fa-diagram-project text-strabon-accent text-xs"></i>
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-bold text-strabon-primary leading-snug">
+                      ${title}
+                    </h4>
+                    <p class="text-[11px] text-gray-400 mt-0.5 flex items-center gap-1">
+                      <i class="fa-solid fa-location-dot text-strabon-accent"></i>
+                      <span>${loc}</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <p class="text-xs text-gray-600 leading-relaxed">
+                ${desc}
+              </p>
+            `;
+
+            pProjectsList.appendChild(card);
+          });
+        }
+      }
+
+      // --- RENDER CERTIFICATES ---
+      renderCertificates(company);
+
+      const assetsList = document.getElementById("p-assets-list");
+      if (assetsList) {
+        assetsList.innerHTML = "";
+        const assets = company.assets || [];
+        if (assets.length === 0) {
+          assetsList.innerHTML = `
+            <tr>
+              <td colspan="3" class="py-4 px-6 text-xs text-gray-500">
+                ${
+                  currentLang === "tr"
+                    ? "Kayıtlı varlık bulunmuyor."
+                    : "No assets listed."
+                }
+              </td>
+            </tr>
+          `;
+        } else {
+          assets.forEach((a) => {
+            const type =
+              currentLang === "tr" && a.type_tr ? a.type_tr : a.type;
+            const spec =
+              currentLang === "tr" && a.spec_tr ? a.spec_tr : a.spec;
+                        const status =
+              currentLang === "tr" && a.status_tr ? a.status_tr : a.status;
+            const baseStatus = a.status || "";
+
+            const row = document.createElement("tr");
+            row.className =
+              "border-b border-gray-50 last:border-0 hover:bg-gray-50 transition";
+            row.innerHTML = `
+              <td class="py-3 px-6 text-xs text-gray-700">
+                ${type}
+              </td>
+              <td class="py-3 px-6 text-xs text-gray-500">
+                ${spec}
+              </td>
+              <td class="py-3 px-6 text-xs">
+                ${getStatusBadge(baseStatus, status)}
+              </td>
+            `;
+            assetsList.appendChild(row);
+
+          });
+        }
+      }
+
+      switchProfileTab("overview");
+    }
+
+    // --- EDITOR FUNCTIONS ---
+    function showEditorView() {
+        document.getElementById("view-dashboard").classList.add("hidden-view");
+        document.getElementById("view-profile").classList.add("hidden-view");
+        document.getElementById("view-editor").classList.remove("hidden-view");
+        document.getElementById("back-btn").classList.remove("hidden", "hidden-view");
+        window.scrollTo(0,0);
+    }
+
+    function saveProfileData() {
+        // 1. Get Values
+        const name = document.getElementById("edit-name").value;
+        const tagline = document.getElementById("edit-tagline").value;
+        const city = document.getElementById("edit-city").value;
+        const sector = document.getElementById("edit-sector").value;
+        const desc = document.getElementById("edit-desc").value;
+        const servicesStr = document.getElementById("edit-services").value;
+        const certsStr = document.getElementById("edit-certs").value;
+
+        // 2. Create Object
+        const newId = Date.now(); // Simple unique ID
+        const newCompany = {
+            id: newId,
+            name: name,
+            city: city,
+            sector: sector,
+            tagline: tagline,
+            desc: desc,
+            desc_tr: desc, // Using same desc for demo
+            trust: "verified",
+            meta: { references: 80, delivery: 80, years: 80, financial: 80, digital: 80 }, // Starter score
+            services: servicesStr.split(',').map(s => s.trim()).filter(s => s),
+            certificates: certsStr.split(',').map(s => s.trim()).filter(s => s),
+            projects: [], // Empty for now in demo editor
+            assets: []    // Empty for now in demo editor
+        };
+
+        // 3. Add to Database
+        database.unshift(newCompany); // Add to top
+
+        // 4. Show success & Go to Profile
+        alert("Profile Created Successfully! Redirecting to preview...");
+        openProfile(newId);
+    }
+
+    function showMainView() {
+      const viewDashboard = document.getElementById("view-dashboard");
+      const viewProfile = document.getElementById("view-profile");
+      const viewEditor = document.getElementById("view-editor");
+      const backBtn = document.getElementById("back-btn");
+
+      if (viewDashboard) viewDashboard.classList.remove("hidden-view");
+      if (viewProfile) viewProfile.classList.add("hidden-view");
+      if (viewEditor) viewEditor.classList.add("hidden-view");
+      if (backBtn) backBtn.classList.add("hidden", "hidden-view");
+    }
+
+    function toggleModal(id) {
+      const modal = document.getElementById(id);
+      if (!modal) return;
+      modal.classList.toggle("opacity-0");
+      modal.classList.toggle("pointer-events-none");
+      document.body.classList.toggle("modal-active");
+    }
+
+    function openQuoteModal(companyName) {
+      const targetEl = document.getElementById("quote-target-company");
+      const inputTarget = document.getElementById("input-target-company");
+      if (targetEl) targetEl.textContent = companyName || "";
+      if (inputTarget) inputTarget.value = companyName || "";
+      toggleModal("modal-quote");
+    }
+
+    function switchProfileTab(tab) {
+      const tabs = ["overview", "projects", "certs", "assets"];
+      tabs.forEach((tName) => {
+        const btn = document.getElementById(`tab-${tName}`);
+        const content = document.getElementById(`content-${tName}`);
+        if (!btn || !content) return;
+
+        if (tName === tab) {
+          btn.classList.add(
+            "border-strabon-accent",
+            "text-strabon-primary",
+            "bg-cyan-50/50"
+          );
+          btn.classList.remove("border-transparent");
+          content.classList.remove("hidden-view");
+        } else {
+          btn.classList.remove(
+            "border-strabon-accent",
+            "text-strabon-primary",
+            "bg-cyan-50/50"
+          );
+          btn.classList.add("border-transparent");
+          content.classList.add("hidden-view");
+        }
+      });
+    }
+
+    function switchLanguage(lang) {
+      currentLang = lang === "tr" ? "tr" : "en";
+
+      const btnEn = document.getElementById("lang-en");
+      const btnTr = document.getElementById("lang-tr");
+
+      if (btnEn && btnTr) {
+        if (currentLang === "en") {
+          btnEn.classList.add("bg-white", "text-strabon-primary", "shadow-sm");
+          btnEn.classList.remove("text-gray-500");
+          btnTr.classList.remove(
+            "bg-white",
+            "text-strabon-primary",
+            "shadow-sm"
+          );
+          btnTr.classList.add("text-gray-500");
+        } else {
+          btnTr.classList.add("bg-white", "text-strabon-primary", "shadow-sm");
+          btnTr.classList.remove("text-gray-500");
+          btnEn.classList.remove(
+            "bg-white",
+            "text-strabon-primary",
+            "shadow-sm"
+          );
+          btnEn.classList.add("text-gray-500");
+        }
+      }
+
+      applyTranslations();
+      renderTopCompanies();
+      const searchInput = document.getElementById("search-input");
+      const value = searchInput ? searchInput.value : "";
+      renderCards(value);
+
+        // Şu an profil ekranında mıyız, kontrol et
+  const viewProfile = document.getElementById("view-profile");
+  const isProfileVisible =
+    viewProfile && !viewProfile.classList.contains("hidden-view");
+
+  // Sadece profil ekranındaysak ilgili şirket profilini yeniden çiz
+  if (isProfileVisible && selectedCompany) {
+    openProfile(selectedCompany.id);
+  }
+
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      applyTranslations();
+      initTopCompaniesOrder();
+      renderTopCompanies();
+      renderCards("");
+
+      startTopAnimations();
+      startGridShuffle();
+
+      switchLanguage("en");
+    });
+  </script>
+</body>
+</html>
