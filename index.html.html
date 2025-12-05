@@ -153,9 +153,11 @@
       </div>
 
       <div class="flex gap-4 text-sm font-medium items-center">
-        <button onclick="openLoginModal()" class="hidden md:flex items-center gap-2 text-gray-500 hover:text-strabon-primary transition font-bold text-xs uppercase tracking-wide mr-2">
-            <i class="fa-solid fa-lock"></i> Partner Login
-        </button>
+
+  <button onclick="openLoginModal()"
+        class="flex items-center gap-2 px-4 py-2 bg-strabon-primary hover:bg-strabon-accent transition text-white rounded-lg text-sm">
+    <i class="fa-solid fa-lock"></i> Partner Login
+</button>
 
         <button
           id="back-btn"
@@ -2824,5 +2826,67 @@
       switchLanguage("en");
     });
   </script>
+</html>
+<!-- PARTNER LOGIN MODAL -->
+<div id="loginModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-[9999]">
+  <div class="bg-white rounded-xl p-6 w-[90%] max-w-md shadow-lg">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">Partner Login</h2>
+
+    <input id="email" type="email" placeholder="Email"
+           class="w-full mb-3 p-3 border rounded-lg"/>
+
+    <input id="password" type="password" placeholder="Password"
+           class="w-full mb-4 p-3 border rounded-lg"/>
+
+    <button onclick="handleLogin()" 
+            class="w-full bg-blue-600 text-white py-2 rounded-lg">
+      Login
+    </button>
+
+    <button onclick="closeLoginModal()" 
+            class="w-full mt-3 bg-gray-300 text-gray-700 py-2 rounded-lg">
+      Cancel
+    </button>
+
+    <p id="loginMessage" class="text-red-600 mt-2 text-center"></p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const supabaseUrl = "https://ncssozhpwzvzeneaumlz.supabase.co";
+  const supabaseKey = "sb_publishable_PA_pZE8gvwSXYUERua8GZQ_x_-1UhFa";
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+  function openLoginModal() {
+    document.getElementById("loginModal").classList.remove("hidden");
+  }
+
+  function closeLoginModal() {
+    document.getElementById("loginModal").classList.add("hidden");
+  }
+
+  async function handleLogin() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    const msgEl = document.getElementById("loginMessage");
+    msgEl.innerText = "";
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password
+    });
+
+    if (error) {
+      msgEl.innerText = error.message;
+      return;
+    }
+
+    msgEl.innerText = "Success!";
+    window.location.href = "/dashboard.html";
+  }
+</script>
+
 </body>
 </html>
