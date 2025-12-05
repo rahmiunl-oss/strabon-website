@@ -926,6 +926,14 @@
       </div>
 
       <div class="flex flex-col gap-3 w-full md:w-auto shrink-0">
+<button
+  id="btn-edit-profile"
+  onclick="editMyProfile()"
+  class="hidden-view w-full mb-3 bg-white text-strabon-primary border border-gray-300 px-8 py-4 rounded-xl font-bold shadow-sm hover:bg-gray-50 transition text-sm flex items-center justify-center gap-2"
+>
+  <i class="fa-solid fa-pen-to-square"></i>
+  EDIT PROFILE
+</button>
         <button
           onclick="openQuoteModal(document.getElementById('p-name').innerText)"
           class="bg-strabon-primary text-white px-8 py-4 rounded-xl font-bold shadow-xl shadow-slate-900/10 hover:bg-strabon-accent transition text-sm flex items-center justify-center gap-2"
@@ -2728,6 +2736,17 @@
       }
 
       switchProfileTab("overview");
+// --- EDİT BUTONU KONTROLÜ (Bunu en sona ekle) ---
+    const btnEdit = document.getElementById("btn-edit-profile");
+    const myId = localStorage.getItem("strabon_my_company_id");
+
+    // Eğer şu an açılan profil (companyId) benim ID'me eşitse butonu göster
+    if (btnEdit && myId && String(companyId) === String(myId)) {
+      btnEdit.classList.remove("hidden-view"); 
+    } else if (btnEdit) {
+      // Değilse gizle
+      btnEdit.classList.add("hidden-view");
+    }
     }
 
     // --- EDITOR FUNCTIONS ---
@@ -2739,100 +2758,58 @@
         window.scrollTo(0,0);
     }
 
-    function saveProfileData() {
-  // 1. Input elemanlarını al
-  const nameEl     = document.getElementById("edit-name");
-  const taglineEl  = document.getElementById("edit-tagline");
-  const cityEl     = document.getElementById("edit-city");
-  const sectorEl   = document.getElementById("edit-sector");
-  const descEl     = document.getElementById("edit-desc");
-  const servicesEl = document.getElementById("edit-services");
-  const certsEl    = document.getElementById("edit-certs");
+   // ✅ YENİ KAYDETME FONKSİYONU (Supabase Uyumlu)
+async function saveProfileData() {
+  const btn = document.querySelector("#editor-form button[type='submit']");
+  const originalText = btn.textContent;
+  btn.textContent = "Kaydediliyor...";
+  btn.disabled = true;
 
-  const name        = (nameEl && nameEl.value || "").trim();
-  const tagline     = (taglineEl && taglineEl.value || "").trim();
-  const city        = (cityEl && cityEl.value || "").trim();
-  const sector      = (sectorEl && sectorEl.value || "").trim();
-  const desc        = (descEl && descEl.value || "").trim();
-  const servicesStr = (servicesEl && servicesEl.value || "").trim();
-  const certsStr    = (certsEl && certsEl.value || "").trim();
-
-  // 2. Zorunlu alan kontrolü
-  const requiredFields = [
-    { el: nameEl,   value: name,   label: "Company Name" },
-    { el: cityEl,   value: city,   label: "City" },
-    { el: sectorEl, value: sector, label: "Sector" },
-    { el: descEl,   value: desc,   label: "Description" },
-  ];
-
-  const missingLabels = [];
-  requiredFields.forEach((field) => {
-    if (!field.value) {
-      missingLabels.push(field.label);
-    }
-  });
-
-  if (missingLabels.length > 0) {
-    alert(
-      "Please fill in the following required fields:\n\n- " +
-      missingLabels.join("\n- ")
-    );
-    return;
-  }
-
-  // 3. Yeni şirket objesini oluştur (database yapısına uygun)
-  const newId = Date.now(); // basit unique ID
-
-  const newCompany = {
-    id: newId,
-    name: name,
-    city: city,
-    sector: sector,
-    type: "supplier", // istersen bunu "contractor" yapabiliriz
-    tagline: tagline,
-    desc: desc,
-    desc_tr: desc, // şimdilik TR için aynı metin
-    trust: "verified",
-    meta: {
-      references: 80,
-      delivery: 80,
-      years: 80,
-      financial: 80,
-      digital: 80,
-    },
-    services: servicesStr
-      ? servicesStr
-          .split(",")
-          .map((s) => s.trim())
-          .filter((s) => s)
-      : [],
-    certificates: certsStr
-      ? certsStr
-          .split(",")
-          .map((s) => s.trim())
-          .filter((s) => s)
-      : [],
-    projects: [],
-    assets: [],
-  };
-
-  // 4. Bu profili "benim şirketim" olarak localStorage'a kaydet
   try {
-    localStorage.setItem("strabon_my_company_id", String(newId));
-  } catch (e) {
-    console.warn("Could not save my company id", e);
-  }
+    // 1. Form verilerini al
+    const name = document.getElementById("edit-name").value.trim();
+    const city = document.getElementById("edit-city").value.trim();
+    const sector = document.getElementById("edit-sector").value;
+    const desc = document.getElementById("edit-desc").value.trim();
+    const tagline = document.getElementById("edit-tagline").value.trim();
+    const servicesStr = document.getElementById("edit-services").value.trim();
+    const certsStr = document.getElementById("edit-certs").value.trim();
 
-  // 5. Local database'e ekle
-  if (Array.isArray(database)) {
-    database.unshift(newCompany);
-  }
+    // 2. Verileri hazırla
+    const updates = {
+      company_name: name,
+      city: city,
+      sector: sector,
+      description: desc,
+      services: servicesStr,
+      updated_at: new Date(),
+    };
 
-  // 6. Bilgi ver & profile yönlendir
-  alert("Profile created successfully. Redirecting to preview…");
-  openProfile(newId);
+    // 3. Supabase'e GÜNCELLEME (Update) isteği at
+    const { data: { user } } = await supabaseClient.auth.getUser();
+
+    if (!user) throw new Error("Oturum bulunamadı!");
+
+    const { error } = await supabaseClient
+      .from('profiles')
+      .update(updates)
+      .eq('id', user.id);
+
+    if (error) throw error;
+
+    alert("Profil başarıyla güncellendi!");
+
+    // 4. Sayfayı yenile ki güncel veriler gelsin
+    window.location.reload(); 
+
+  } catch (error) {
+    console.error("Güncelleme hatası:", error);
+    alert("Hata: " + error.message);
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
 }
-
 
 
     function showMainView() {
@@ -3186,5 +3163,30 @@ function openMyCompanyIfExists() {
   }
 }
 
+/* --- PROFİL DÜZENLEME FONKSİYONLARI --- */
+
+function editMyProfile() {
+  if (!selectedCompany) return;
+
+  // 1. Mevcut verileri editör kutularına doldur
+  document.getElementById("edit-name").value = selectedCompany.name || "";
+  document.getElementById("edit-city").value = selectedCompany.city || "";
+  document.getElementById("edit-tagline").value = selectedCompany.tagline || "";
+  document.getElementById("edit-desc").value = selectedCompany.desc || "";
+  
+  // Sektör seçimi
+  const sectorSelect = document.getElementById("edit-sector");
+  if(sectorSelect) sectorSelect.value = selectedCompany.sector;
+
+  // Listeleri metne çevir (Virgüllü hale getir)
+  const services = selectedCompany.services || []; // Array mi kontrol et
+  const certs = selectedCompany.certificates || [];
+
+  document.getElementById("edit-services").value = Array.isArray(services) ? services.join(", ") : services;
+  document.getElementById("edit-certs").value = Array.isArray(certs) ? certs.join(", ") : certs;
+
+  // 2. Editör ekranını aç
+  showEditorView();
+}
 </script>
 </html>
