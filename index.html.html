@@ -785,7 +785,31 @@
           placeholder="Describe your company's core capabilities..."
         ></textarea>
       </div>
-
+<div class="grid grid-cols-3 gap-4 mb-4">
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Type</label>
+          <select id="edit-type" class="w-full border border-gray-300 rounded-lg px-4 py-3 bg-white outline-none">
+              <option value="Industrial Supplier">Industrial Supplier</option>
+              <option value="Manufacturer">Manufacturer</option>
+              <option value="Contractor">Contractor</option>
+              <option value="Distributor">Distributor</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Size</label>
+          <select id="edit-size" class="w-full border border-gray-300 rounded-lg px-4 py-3 bg-white outline-none">
+              <option value="1-10 employees">1-10</option>
+              <option value="10-50 employees">10-50</option>
+              <option value="50-100 employees">50-100</option>
+              <option value="100-250 employees">100-250</option>
+              <option value="250+ employees">250+</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Year</label>
+          <input type="number" id="edit-year" class="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none" placeholder="2012">
+        </div>
+      </div>
       <div>
         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
           Core Services <span class="text-gray-400 font-normal">(Optional)</span>
@@ -2582,6 +2606,15 @@
       const cityEl = document.getElementById("p-city");
       const sectorEl = document.getElementById("p-sector");
       const badgeEl = document.getElementById("p-badge");
+      // ✅ openProfile İÇİNE EKLENECEK PARÇA
+      const pType = document.getElementById("p-type-tag");
+      const pSize = document.getElementById("p-size-tag");
+      const pYear = document.getElementById("p-year-tag");
+
+      // Verileri ekrana yaz
+      if (pType) pType.textContent = company.type_label || "Industrial Supplier";
+      if (pSize) pSize.textContent = company.size_label || "Size N/A";
+      if (pYear) pYear.textContent = company.year_label ? `Founded ${company.year_label}` : "";
 
       if (nameEl) nameEl.textContent = company.name;
       if (cityEl) cityEl.textContent = company.city;
@@ -2759,7 +2792,7 @@
     }
 
    // ✅ YENİ KAYDETME FONKSİYONU (Supabase Uyumlu)
-// ✅ YENİSİNİ BURAYA YAPIŞTIR
+// ✅ 1. GÜNCELLENMİŞ KAYDETME FONKSİYONU
 async function saveProfileData() {
   const btn = document.querySelector("#editor-form button[type='submit']");
   const originalText = btn.textContent;
@@ -2767,22 +2800,33 @@ async function saveProfileData() {
   btn.disabled = true;
 
   try {
-    // 1. Form verilerini al
+    // Mevcut inputları al
     const name = document.getElementById("edit-name").value.trim();
     const city = document.getElementById("edit-city").value.trim();
     const sector = document.getElementById("edit-sector").value;
     const desc = document.getElementById("edit-desc").value.trim();
-    const tagline = document.getElementById("edit-tagline").value.trim();
     const servicesStr = document.getElementById("edit-services").value.trim();
-    const certsStr = document.getElementById("edit-certs").value.trim();
+    
+    // YENİ INPUTLARI AL
+    const typeEl = document.getElementById("edit-type");
+    const sizeEl = document.getElementById("edit-size");
+    const yearEl = document.getElementById("edit-year");
+    
+    // Değerleri hazırla (Boşsa varsayılan değer ata)
+    const typeVal = typeEl ? typeEl.value : "Industrial Supplier";
+    const sizeVal = sizeEl ? sizeEl.value : "1-10 employees";
+    const yearVal = yearEl ? yearEl.value : "";
 
-    // 2. Supabase güncellemesi
     const updates = {
       company_name: name,
       city: city,
       sector: sector,
       description: desc,
       services: servicesStr,
+      // Yeni sütunlara yaz
+      company_type: typeVal,
+      company_size: sizeVal,
+      founded_year: yearVal,
       updated_at: new Date(),
     };
 
@@ -2796,38 +2840,36 @@ async function saveProfileData() {
 
     if (error) throw error;
 
-    alert("Profil başarıyla güncellendi!");
+    alert("Profil güncellendi!");
 
-    // 3. EKRANI GÜNCELLE (Sayfa yenilemeden)
-    // RAM'deki veriyi güncelliyoruz
+    // Ekranı anlık güncelle (Sayfa yenilemeden)
     const localCompany = database.find(c => c.id == user.id);
     if (localCompany) {
         localCompany.name = name;
         localCompany.city = city;
         localCompany.sector = sector;
         localCompany.desc = desc;
-        localCompany.tagline = tagline;
         localCompany.services = servicesStr.split(',').map(s => s.trim()).filter(s => s);
-        localCompany.certificates = certsStr.split(',').map(s => s.trim()).filter(s => s);
+        
+        // Yeni verileri hafızaya da işle
+        localCompany.type_label = typeVal;
+        localCompany.size_label = sizeVal;
+        localCompany.year_label = yearVal;
     }
 
-    // 4. Profili tekrar aç (Ana sayfaya atmasın diye)
     openProfile(user.id);
-
-    // Editörü gizle, profili göster
     document.getElementById("view-editor").classList.add("hidden-view");
     document.getElementById("view-profile").classList.remove("hidden-view");
     document.getElementById("back-btn").classList.remove("hidden", "hidden-view");
 
   } catch (error) {
-    console.error("Güncelleme hatası:", error);
+    console.error("Hata:", error);
     alert("Hata: " + error.message);
   } finally {
     btn.textContent = originalText;
     btn.disabled = false;
   }
 }
-
     function showMainView() {
       const viewDashboard = document.getElementById("view-dashboard");
       const viewProfile = document.getElementById("view-profile");
@@ -3071,8 +3113,8 @@ async function handleJoin() {
 }
 
 // ✅ BUNU YAPIŞTIR
+// ✅ 2. GÜNCELLENMİŞ VERİ ÇEKME FONKSİYONU
 async function checkUserAndOpenProfile(forceOpen = false) {
-  // Oturum var mı bak
   const { data: { session } } = await supabaseClient.auth.getSession();
   
   const btnLogin = document.getElementById("btn-partner-login");
@@ -3090,25 +3132,27 @@ async function checkUserAndOpenProfile(forceOpen = false) {
     if(btnMyCompany) btnMyCompany.classList.remove("hidden");
   }
 
-  // Veritabanından veriyi çek
   const { data: profile, error } = await supabaseClient
     .from('profiles')
     .select('*')
     .eq('id', session.user.id)
     .single();
 
-  if (error || !profile) {
-    console.log("Profil verisi yok.");
-    return;
-  }
+  if (error || !profile) { console.log("Profil yok."); return; }
 
-  // Veriyi formatla
+  // Veritabanı verisini site formatına çevir
   const mappedProfile = {
     id: profile.id,
     name: profile.company_name,
     city: profile.city,
     sector: profile.sector || "construction",
     desc: profile.description || "",
+    
+    // YENİ ALANLAR BURADA EŞLEŞİYOR
+    type_label: profile.company_type || "Industrial Supplier",
+    size_label: profile.company_size || "Size N/A",
+    year_label: profile.founded_year || "",
+
     services: profile.services ? profile.services.split(',') : [],
     trust: "verified",
     meta: { references: 50, delivery: 50, years: 1, financial: 50, digital: 50 },
@@ -3116,24 +3160,16 @@ async function checkUserAndOpenProfile(forceOpen = false) {
     projects: [] 
   };
 
-  // Listeye ekle
   if (typeof database !== 'undefined') {
       const idx = database.findIndex(c => c.id == profile.id);
-      if (idx > -1) {
-        database[idx] = mappedProfile;
-      } else {
-        database.unshift(mappedProfile);
-      }
+      if (idx > -1) { database[idx] = mappedProfile; } 
+      else { database.unshift(mappedProfile); }
       
       localStorage.setItem("strabon_my_company_id", profile.id);
 
-      // 🔥 EĞER GİRİŞ YAPILDIYSA ZORLA PROFİLİ AÇ
-      if (forceOpen === true) {
-        openProfile(profile.id);
-      }
+      if (forceOpen === true) { openProfile(profile.id); }
   }
 }
-
 // 3. SAYFA YÜKLENİNCE ÇALIŞTIR
 document.addEventListener("DOMContentLoaded", () => {
     
