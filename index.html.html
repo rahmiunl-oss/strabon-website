@@ -1092,9 +1092,10 @@
 
         <!-- Add Asset Button -->
         <button
+          id="btn-add-asset"
           type="button"
           onclick="openAssetModal()"
-          class="ml-2 inline-flex items-center px-3 py-1.5 rounded-full bg-strabon-accent text-white font-bold shadow-sm text-[10px] hover:bg-strabon-darkAccent"
+          class="hidden-view ml-2 inline-flex items-center px-3 py-1.5 rounded-full bg-strabon-accent text-white font-bold shadow-sm text-[10px] hover:bg-strabon-darkAccent transition"
         >
           <i class="fa-solid fa-plus mr-1"></i> Add Asset
         </button>
@@ -2770,6 +2771,18 @@
 
       switchProfileTab("overview");
 // --- EDİT BUTONU KONTROLÜ (Bunu en sona ekle) ---
+// --- ASSET EKLEME BUTONU KONTROLÜ ---
+    const btnAddAsset = document.getElementById("btn-add-asset");
+    // myId değişkenini tekrar almaya gerek yok ama garanti olsun diye alalım
+    const myCurrentId = localStorage.getItem("strabon_my_company_id");
+
+    // Eğer buton varsa VE giriş yapanın ID'si ile profil ID'si aynıysa butonu göster
+    if (btnAddAsset && myCurrentId && String(companyId) === String(myCurrentId)) {
+       btnAddAsset.classList.remove("hidden-view");
+    } else if (btnAddAsset) {
+       // Değilse gizle
+       btnAddAsset.classList.add("hidden-view");
+    }
     const btnEdit = document.getElementById("btn-edit-profile");
     const myId = localStorage.getItem("strabon_my_company_id");
 
@@ -3000,54 +3013,70 @@ async function saveProfileData() {
     if (form) form.reset();
   }
 
-  function saveAsset() {
-    // Form verilerini al
+  // ✅ GÜNCELLENMİŞ ASSET KAYDETME (Supabase Uyumlu)
+async function saveAsset() {
+  const btn = document.querySelector("#asset-form button[type='submit']");
+  const originalText = btn.textContent;
+  btn.textContent = "Kaydediliyor...";
+  btn.disabled = true;
+
+  try {
+    // 1. Form verilerini al
     const item = document.getElementById("asset-item").value.trim();
     const specs = document.getElementById("asset-specs").value.trim();
     const qty = document.getElementById("asset-qty").value.trim() || "1";
     const location = document.getElementById("asset-location").value.trim();
     const status = document.getElementById("asset-status").value;
 
-    if (!item) {
-      alert("Please enter an asset name.");
-      return;
-    }
+    if (!item) { alert("Lütfen bir isim girin."); return; }
 
-    // Tabloyu bul
-    const tbody = document.getElementById("p-assets-list");
-    
-    // Eğer tabloda "No assets listed" yazısı varsa temizle
-    if (tbody.innerHTML.includes("No assets listed") || tbody.innerHTML.includes("Kayıtlı varlık bulunmuyor")) {
-        tbody.innerHTML = "";
-    }
+    // 2. Yeni Asset Objesi Oluştur
+    const newAsset = {
+        id: Date.now(),
+        type: item,
+        spec: specs,
+        qty: qty,
+        location: location,
+        status: status,
+        date_added: new Date().toISOString()
+    };
 
-    // Rengi belirle
-    let badgeClass = "bg-slate-50 text-slate-600";
-    if(status === "Available") badgeClass = "bg-emerald-50 text-emerald-700";
-    else if(status === "Under Maintenance") badgeClass = "bg-amber-50 text-amber-700";
-    else if(status === "Out of Service") badgeClass = "bg-rose-50 text-rose-700";
+    // 3. Mevcut listeyi al ve yenisini ekle
+    let currentAssets = selectedCompany.assets || [];
+    if (!Array.isArray(currentAssets)) currentAssets = [];
+    const updatedAssetsList = [...currentAssets, newAsset];
 
-    // Yeni satırı oluştur
-    const tr = document.createElement("tr");
-    tr.className = "border-b border-gray-50 last:border-0 hover:bg-gray-50 transition animate-fade-in";
-    tr.innerHTML = `
-        <td class="py-3 px-6 text-xs text-gray-700 font-medium">${item}</td>
-        <td class="py-3 px-6 text-xs text-gray-500">${specs || "-"}</td>
-        <td class="py-3 px-6 text-xs text-gray-700">${qty}</td>
-        <td class="py-3 px-6 text-xs text-gray-500">${location || "-"}</td>
-        <td class="py-3 px-6 text-xs">
-            <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-semibold ${badgeClass}">
-                <span class="mr-1">●</span> ${status}
-            </span>
-        </td>
-    `;
+    // 4. Supabase'e GÖNDER
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) throw new Error("Oturum yok.");
 
-    // Tabloya ekle
-    tbody.appendChild(tr);
+    const { error } = await supabaseClient
+      .from('profiles')
+      .update({ assets: updatedAssetsList, updated_at: new Date() })
+      .eq('id', user.id);
 
-    // Modalı kapat
+    if (error) throw error;
+
+    // 5. Ekranı güncelle
+    selectedCompany.assets = updatedAssetsList;
+    const localRef = database.find(c => c.id == user.id);
+    if(localRef) localRef.assets = updatedAssetsList;
+
+    // 6. Listeyi tekrar çiz
+    openProfile(user.id);
+    switchProfileTab('assets');
+
+    alert("Varlık başarıyla eklendi!");
     closeAssetModal();
+
+  } catch (error) {
+    console.error("Asset hatası:", error);
+    alert("Hata: " + error.message);
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
   }
+}
   </script>
 <script>
 // 1. YENİ KAYIT (JOIN) İŞLEMİ
@@ -3156,7 +3185,7 @@ async function checkUserAndOpenProfile(forceOpen = false) {
     services: profile.services ? profile.services.split(',') : [],
     trust: "verified",
     meta: { references: 50, delivery: 50, years: 1, financial: 50, digital: 50 },
-    assets: [],
+    assets: profile.assets || [],
     projects: [] 
   };
 
