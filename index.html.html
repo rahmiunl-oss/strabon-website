@@ -164,6 +164,15 @@
     Partner Login
   </button>
 
+<button
+  id="btn-my-company"
+  onclick="openMyCompanyIfExists()"
+  class="hidden flex items-center gap-2 px-4 py-2 bg-cyan-50 text-strabon-accent border border-cyan-200 rounded-lg text-sm font-bold hover:bg-cyan-100 transition mr-2"
+>
+  <i class="fa-solid fa-building-user"></i>
+  My Company
+</button>
+
   <!-- LOGOUT butonu (başta gizli) -->
   <button
     id="btn-partner-logout"
@@ -3092,22 +3101,27 @@ async function handleJoin() {
   }
 }
 
-// 2. KULLANICIYI TANI VE PROFİLİ AÇ
+// 2. KULLANICIYI TANI VE PROFİLİ AÇ (GÜNCELLENMİŞ VERSİYON)
 async function checkUserAndOpenProfile() {
   // Oturum var mı bak
   const { data: { session } } = await supabaseClient.auth.getSession();
   
-  // Login/Logout butonlarını ayarla
+  // Butonları element olarak seç
   const btnLogin = document.getElementById("btn-partner-login");
   const btnLogout = document.getElementById("btn-partner-logout");
+  const btnMyCompany = document.getElementById("btn-my-company"); // YENİ BUTON
 
   if (!session) {
+    // Oturum YOKSA: Login göster, diğerlerini gizle
     if(btnLogin) btnLogin.classList.remove("hidden");
     if(btnLogout) btnLogout.classList.add("hidden");
+    if(btnMyCompany) btnMyCompany.classList.add("hidden");
     return;
   } else {
+    // Oturum VARSA: Login gizle, Logout ve Şirketim butonunu göster
     if(btnLogin) btnLogin.classList.add("hidden");
     if(btnLogout) btnLogout.classList.remove("hidden");
+    if(btnMyCompany) btnMyCompany.classList.remove("hidden");
   }
 
   // Veritabanından şirket bilgilerini çek
@@ -3124,22 +3138,20 @@ async function checkUserAndOpenProfile() {
 
   // Gelen veriyi sitenin anlayacağı formata çevir
   const mappedProfile = {
-    id: profile.id, // ID artık veritabanından geliyor
+    id: profile.id,
     name: profile.company_name,
     city: profile.city,
     sector: profile.sector || "construction",
     desc: profile.description || "Henüz açıklama girilmedi.",
     services: profile.services ? profile.services.split(',') : [],
     trust: "verified",
-    // Yeni üyeler için başlangıç puanı
     meta: { references: 50, delivery: 50, years: 1, financial: 50, digital: 50 },
     assets: [],
     projects: [] 
   };
 
-  // Bu şirketi geçici olarak listeye ekle ki sayfa açabilsin
+  // Listeye ekle ve hafızaya al
   if (typeof database !== 'undefined') {
-      // Varsa güncelle, yoksa en başa ekle
       const idx = database.findIndex(c => c.id == profile.id);
       if (idx > -1) {
         database[idx] = mappedProfile;
@@ -3147,12 +3159,12 @@ async function checkUserAndOpenProfile() {
         database.unshift(mappedProfile);
       }
       
-      // VE PROFİL SAYFASINI AÇ!
-      console.log("Kullanıcı profili açılıyor:", mappedProfile.name);
-      openProfile(mappedProfile.id);
-      
-      // Kullanıcıya kendi profilini düzenleme yetkisi ver (ID eşleşirse)
+      // Kullanıcı ID'sini kaydet
       localStorage.setItem("strabon_my_company_id", profile.id);
+
+      // EĞER sayfa ilk açılışı ise (kullanıcı tıklamadıysa) direkt profili açmayalım
+      // Sadece veriyi yüklemiş olalım. 
+      // Ama "Join" işleminden hemen sonra burası çağrıldığında otomatik açılacak.
   }
 }
 
