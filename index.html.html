@@ -154,10 +154,25 @@
 
       <div class="flex gap-4 text-sm font-medium items-center">
 
-  <button onclick="openLoginModal()"
-        class="flex items-center gap-2 px-4 py-2 bg-strabon-primary hover:bg-strabon-accent transition text-white rounded-lg text-sm">
-    <i class="fa-solid fa-lock"></i> Partner Login
-</button>
+  <!-- LOGIN butonu -->
+  <button
+    id="btn-partner-login"
+    onclick="openLoginModal()"
+    class="flex items-center gap-2 px-4 py-2 bg-strabon-primary hover:bg-strabon-accent transition text-white rounded-lg text-sm"
+  >
+    <i class="fa-solid fa-lock"></i>
+    Partner Login
+  </button>
+
+  <!-- LOGOUT butonu (başta gizli) -->
+  <button
+    id="btn-partner-logout"
+    onclick="partnerLogout()"
+    class="hidden flex items-center gap-2 px-4 py-2 border border-red-500 text-red-600 rounded-lg text-sm hover:bg-red-50"
+  >
+    <i class="fa-solid fa-right-from-bracket"></i>
+    Logout
+  </button>
 
         <button
           id="back-btn"
@@ -167,25 +182,6 @@
           <i class="fa-solid fa-arrow-left"></i>
           <span data-i18n="back">BACK</span>
         </button>
-
-        <div
-          class="hidden md:flex gap-1 items-center bg-gray-200/50 backdrop-blur rounded-full p-1"
-        >
-          <button
-            onclick="switchLanguage('en')"
-            id="lang-en"
-            class="px-3 py-1 rounded-full text-xs font-bold bg-white shadow-sm text-strabon-primary transition"
-          >
-            EN
-          </button>
-          <button
-            onclick="switchLanguage('tr')"
-            id="lang-tr"
-            class="px-3 py-1 rounded-full text-xs font-bold text-gray-500 hover:text-strabon-primary transition"
-          >
-            TR
-          </button>
-        </div>
 
         <button
           onclick="toggleModal('modal-join')"
@@ -679,58 +675,164 @@
                   </div>
 
                   <div class="col-span-2 p-8">
-                      <form id="editor-form" onsubmit="event.preventDefault(); saveProfileData();">
-                          <div class="space-y-6">
-                              <div>
-                                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Company Name</label>
-                                  <input type="text" id="edit-name" class="input-field w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 font-bold focus:outline-none transition" placeholder="e.g. Acme Construction" required>
-                              </div>
+            <form id="editor-form" onsubmit="event.preventDefault(); saveProfileData();">
+  <div class="space-y-8">
 
-                              <div>
-                                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tagline (Slogan)</label>
-                                  <input type="text" id="edit-tagline" class="input-field w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none transition" placeholder="e.g. Building the Future">
-                              </div>
+    <!-- SECTION: COMPANY IDENTITY (REQUIRED) -->
+    <div class="space-y-4">
+      <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">
+        Company Identity <span class="text-red-500">*</span>
+      </h3>
 
-                              <div class="grid grid-cols-2 gap-4">
-                                  <div>
-                                      <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">City</label>
-                                      <input type="text" id="edit-city" class="input-field w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none transition" placeholder="e.g. Istanbul, TR">
-                                  </div>
-                                  <div>
-                                      <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Sector</label>
-                                      <select id="edit-sector" class="input-field w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none transition bg-white">
-                                          <option value="construction">Construction</option>
-                                          <option value="mining">Mining</option>
-                                          <option value="energy">Energy</option>
-                                          <option value="drilling">Drilling</option>
-                                          <option value="equipment">Equipment</option>
-                                      </select>
-                                  </div>
-                              </div>
+      <!-- Company Name (REQUIRED) -->
+      <div>
+        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+          Company Name <span class="text-red-500">*</span>
+        </label>
+        <p class="text-[11px] text-gray-400 mb-2">
+          This is the public name shown on Strabon Network.
+        </p>
+        <input
+          type="text"
+          id="edit-name"
+          class="input-field w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 font-bold focus:outline-none transition"
+          placeholder="e.g. Acme Construction"
+          required
+        />
+      </div>
 
-                              <div>
-                                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Description</label>
-                                  <textarea id="edit-desc" rows="4" class="input-field w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none transition" placeholder="Describe your company's core capabilities..."></textarea>
-                              </div>
+      <!-- City (REQUIRED) -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+            City <span class="text-red-500">*</span>
+          </label>
+          <p class="text-[11px] text-gray-400 mb-2">
+            Main operating city or headquarters.
+          </p>
+          <input
+            type="text"
+            id="edit-city"
+            class="input-field w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none transition"
+            placeholder="e.g. Istanbul, TR"
+            required
+          />
+        </div>
 
-                              <div>
-                                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Core Services (Comma separated)</label>
-                                  <input type="text" id="edit-services" class="input-field w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none transition" placeholder="EPC, Excavation, Maintenance...">
-                              </div>
+        <!-- Sector (REQUIRED) -->
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+            Sector <span class="text-red-500">*</span>
+          </label>
+          <p class="text-[11px] text-gray-400 mb-2">
+            Select the primary sector for this supplier.
+          </p>
+          <select
+            id="edit-sector"
+            class="input-field w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none transition bg-white"
+            required
+          >
+            <option value="">Select sector…</option>
+            <option value="construction">Construction</option>
+            <option value="mining">Mining</option>
+            <option value="energy">Energy</option>
+            <option value="drilling">Drilling</option>
+            <option value="equipment">Equipment</option>
+          </select>
+        </div>
+      </div>
 
-                              <div>
-                                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Certificates (Comma separated)</label>
-                                  <input type="text" id="edit-certs" class="input-field w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none transition" placeholder="ISO 9001, ASME, CE...">
-                              </div>
+      <!-- Tagline (OPTIONAL) -->
+      <div>
+        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+          Tagline (Slogan) <span class="text-gray-400 font-normal">(Optional)</span>
+        </label>
+        <input
+          type="text"
+          id="edit-tagline"
+          class="input-field w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none transition"
+          placeholder="e.g. Building the Future"
+        />
+      </div>
+    </div>
 
-                              <div class="pt-6 border-t border-gray-100 flex items-center justify-end gap-3">
-                                  <button type="button" onclick="showMainView()" class="px-6 py-3 rounded-lg font-bold text-gray-500 hover:bg-gray-100 transition">Cancel</button>
-                                  <button type="submit" class="bg-strabon-accent hover:bg-strabon-darkAccent text-white px-8 py-3 rounded-lg font-bold shadow-lg shadow-cyan-500/30 transition transform hover:-translate-y-0.5">
-                                      <i class="fa-solid fa-save mr-2"></i> Save & Preview
-                                  </button>
-                              </div>
-                          </div>
-                      </form>
+    <!-- SECTION: COMPANY DESCRIPTION (OPTIONAL) -->
+    <div class="space-y-4">
+      <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">
+        Company Description <span class="text-gray-400 font-normal">(Optional)</span>
+      </h3>
+
+      <div>
+        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+          Description
+        </label>
+        <p class="text-[11px] text-gray-400 mb-2">
+          Short summary of core capabilities, experience and focus areas.
+        </p>
+        <textarea
+          id="edit-desc"
+          rows="4"
+          class="input-field w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none transition"
+          placeholder="Describe your company's core capabilities..."
+        ></textarea>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+          Core Services <span class="text-gray-400 font-normal">(Optional)</span>
+        </label>
+        <p class="text-[11px] text-gray-400 mb-2">
+          Comma separated list. Example: EPC, Excavation, Maintenance.
+        </p>
+        <input
+          type="text"
+          id="edit-services"
+          class="input-field w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none transition"
+          placeholder="EPC, Excavation, Maintenance..."
+        />
+      </div>
+    </div>
+
+    <!-- SECTION: CERTIFICATES (OPTIONAL) -->
+    <div class="space-y-3">
+      <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">
+        Certificates <span class="text-gray-400 font-normal">(Optional)</span>
+      </h3>
+
+      <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+        Certificates (Comma separated)
+      </label>
+      <p class="text-[11px] text-gray-400 mb-2">
+        Example: ISO 9001, ISO 14001, ISO 45001, CE.
+      </p>
+      <input
+        type="text"
+        id="edit-certs"
+        class="input-field w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:outline-none transition"
+        placeholder="ISO 9001, ASME, CE..."
+      />
+    </div>
+
+    <!-- FOOTER BUTTONS -->
+    <div class="pt-6 border-t border-gray-100 flex items-center justify-end gap-3">
+      <button
+        type="button"
+        onclick="showMainView()"
+        class="px-6 py-3 rounded-lg font-bold text-gray-500 hover:bg-gray-100 transition"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="submit"
+        class="bg-strabon-accent hover:bg-strabon-darkAccent text-white px-8 py-3 rounded-lg font-bold shadow-lg shadow-cyan-500/30 transition transform hover:-translate-y-0.5"
+      >
+        <i class="fa-solid fa-save mr-2"></i> Save &amp; Preview
+      </button>
+    </div>
+  </div>
+</form>
+
                   </div>
               </div>
           </div>
@@ -932,96 +1034,51 @@
      </div>
 
 </div>
-
-        <div id="content-assets" class="hidden-view">
-  <div
-    class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm"
-  >
-    <div
-      class="flex flex-wrap items-center justify-between gap-3 px-6 pt-4 pb-3 border-b border-gray-100"
-    >
-      <div class="flex flex-wrap items-center gap-2 text-[11px] text-gray-600">
-        <span
-  class="font-semibold text-gray-500"
-  data-i18n="asset_categories"
->
-  Asset categories:
-</span>
-        <span
-          class="px-2 py-1 rounded-full bg-slate-50 border border-slate-200"
-        >
-          Crushing &amp; Screening
-        </span>
-        <span
-          class="px-2 py-1 rounded-full bg-slate-50 border border-slate-200"
-        >
-          Haul Trucks
-        </span>
-        <span
-          class="px-2 py-1 rounded-full bg-slate-50 border border-slate-200"
-        >
-          Drilling Rigs
-        </span>
-        <span
-          class="px-2 py-1 rounded-full bg-slate-50 border border-slate-200"
-        >
-          Support Equipment
-        </span>
-      </div>
-
+<div id="content-assets" class="hidden-view">
+  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+    <!-- Üst başlık: sadece durum badge'leri + Add Asset -->
+    <div class="flex flex-wrap items-center justify-between gap-3 px-6 pt-4 pb-3 border-b border-gray-100">
       <div class="flex flex-wrap items-center gap-2 text-[10px]">
-        <span
-          class="inline-flex items-center px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold"
-        >
+        <span class="inline-flex items-center px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold">
           <span class="mr-1">●</span> Available
         </span>
-        <span
-          class="inline-flex items-center px-2 py-1 rounded-full bg-amber-50 text-amber-700 font-semibold"
-        >
+        <span class="inline-flex items-center px-2 py-1 rounded-full bg-amber-50 text-amber-700 font-semibold">
           <span class="mr-1">●</span> Under Maintenance
         </span>
-        <span
-          class="inline-flex items-center px-2 py-1 rounded-full bg-rose-50 text-rose-700 font-semibold"
-        >
+        <span class="inline-flex items-center px-2 py-1 rounded-full bg-rose-50 text-rose-700 font-semibold">
           <span class="mr-1">●</span> Out of Service
         </span>
+
+        <!-- Add Asset Button -->
+        <button
+          type="button"
+          onclick="openAssetModal()"
+          class="ml-2 inline-flex items-center px-3 py-1.5 rounded-full bg-strabon-accent text-white font-bold shadow-sm text-[10px] hover:bg-strabon-darkAccent"
+        >
+          <i class="fa-solid fa-plus mr-1"></i> Add Asset
+        </button>
       </div>
     </div>
 
+    <!-- Tablo: Item - Specs - Qty - Location - Status -->
     <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 text-gray-500 uppercase font-bold text-xs">
+        <tr>
+          <th class="py-4 px-6 text-left">Item</th>
+          <th class="py-4 px-6 text-left">Specs</th>
+          <th class="py-4 px-6 text-left">Qty</th>
+          <th class="py-4 px-6 text-left">Location</th>
+          <th class="py-4 px-6 text-left">Status</th>
+        </tr>
+      </thead>
 
-              <thead
-                class="bg-gray-50 text-gray-500 uppercase font-bold text-xs"
-              >
-                <tr>
-                  <th
-                    class="py-4 px-6 text-left"
-                    data-i18n="th_item"
-                  >
-                    Item
-                  </th>
-                  <th
-                    class="py-4 px-6 text-left"
-                    data-i18n="th_specs"
-                  >
-                    Specs
-                  </th>
-                  <th
-                    class="py-4 px-6 text-left"
-                    data-i18n="th_status"
-                  >
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody
-                id="p-assets-list"
-                class="divide-y divide-gray-100"
-              ></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      <tbody id="p-assets-list" class="divide-y divide-gray-100"></tbody>
+    </table>
+  </div>
+</div>
+
+        
+
 
       <div class="space-y-6">
         <div
@@ -1123,137 +1180,52 @@
             ></i>
           </div>
         </div>
-        <form
-          action="https://formspree.io/f/mqakpeoy"
-          method="POST"
-          class="space-y-5"
-        >
-          <input type="hidden" name="form_type" value="Join_Application" />
-          <div>
-            <label
-              class="block text-xs font-bold text-gray-600 mb-1.5"
-              data-i18n="field_company"
-              >Company Name</label
-            >
-            <input
-              type="text"
-              name="companyName"
-              class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none"
-              required
-            />
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label
-                class="block text-xs font-bold text-gray-600 mb-1.5"
-                data-i18n="field_sector"
-                >Sector</label
-              >
-              <select
-                name="sector"
-                class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none"
-              >
-                <option>Construction</option>
-                <option>Mining</option>
-                <option>Energy</option>
-                <option>Drilling</option>
-                <option>Equipment</option>
-              </select>
-            </div>
-            <div>
-              <label
-                class="block text-xs font-bold text-gray-600 mb-1.5"
-                data-i18n="field_city"
-                >City</label
-              >
-              <input
-                type="text"
-                name="location"
-                class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none"
-                required
-              />
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label
-                class="block text-xs font-bold text-gray-600 mb-1.5"
-                >Email</label
-              >
-              <input
-                type="email"
-                name="email"
-                class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none"
-                required
-              />
-            </div>
-            <div>
-              <label
-                class="block text-xs font-bold text-gray-600 mb-1.5"
-                data-i18n="field_website"
-                >Website</label
-              >
-              <input
-                type="text"
-                name="website"
-                class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none"
-                placeholder="https://"
-              />
-            </div>
-          </div>
-          <div>
-            <label
-              class="block text-xs font-bold text-gray-600 mb-1.5"
-              data-i18n="field_size"
-              >Company Size</label
-            >
-            <select
-              name="size"
-              class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none"
-            >
-              <option>1-10</option>
-              <option>11-50</option>
-              <option>51-250</option>
-              <option>251-1000</option>
-              <option>1000+</option>
-            </select>
-          </div>
-          <div>
-            <label
-              class="block text-xs font-bold text-gray-600 mb-1.5"
-              data-i18n="field_services"
-              >Core Services / Focus</label
-            >
-            <textarea
-              name="services"
-              rows="3"
-              class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none"
-              placeholder="EPC, underground mining, earthworks, heavy equipment rental..."
-            ></textarea>
-          </div>
-          <div>
-            <label
-              class="block text-xs font-bold text-gray-600 mb-1.5"
-              data-i18n="field_note"
-              >Additional Notes</label
-            >
-            <textarea
-              name="notes"
-              rows="3"
-              class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none"
-              placeholder="Share key references, projects or expectations."
-            ></textarea>
-          </div>
-          <div class="pt-2">
-            <button
-              type="submit"
-              class="w-full bg-strabon-primary text-white font-bold py-4 rounded-xl hover:bg-strabon-accent transition"
-              data-i18n="btn_submit"
-            >
-              SUBMIT APPLICATION
-            </button>
-          </div>
-        </form>
+        <form id="join-form" onsubmit="event.preventDefault(); handleJoin();" class="space-y-5">
+  <div>
+    <label class="block text-xs font-bold text-gray-600 mb-1.5" data-i18n="field_company">Company Name</label>
+    <input type="text" id="join-companyName" class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none" required />
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <label class="block text-xs font-bold text-gray-600 mb-1.5">Email</label>
+      <input type="email" id="join-email" class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none" required />
+    </div>
+    <div>
+      <label class="block text-xs font-bold text-gray-600 mb-1.5">Password</label>
+      <input type="password" id="join-password" class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none" placeholder="******" required />
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <label class="block text-xs font-bold text-gray-600 mb-1.5" data-i18n="field_sector">Sector</label>
+      <select id="join-sector" class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none">
+        <option value="construction">Construction</option>
+        <option value="mining">Mining</option>
+        <option value="energy">Energy</option>
+        <option value="drilling">Drilling</option>
+        <option value="equipment">Equipment</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-xs font-bold text-gray-600 mb-1.5" data-i18n="field_city">City</label>
+      <input type="text" id="join-city" class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none" required />
+    </div>
+  </div>
+
+  <div>
+    <label class="block text-xs font-bold text-gray-600 mb-1.5" data-i18n="field_services">Core Services</label>
+    <textarea id="join-services" rows="2" class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 outline-none" placeholder="EPC, Excavation..."></textarea>
+  </div>
+
+  <div class="pt-2">
+    <button type="submit" class="w-full bg-strabon-primary text-white font-bold py-4 rounded-xl hover:bg-strabon-accent transition">
+      CREATE ACCOUNT & PROFILE
+    </button>
+  </div>
+  <p id="join-error" class="text-xs text-red-500 text-center hidden"></p>
+</form>
       </div>
     </div>
   </div>
@@ -1446,15 +1418,81 @@
     </form>
   </div>
 </div>
+<div id="asset-modal" class="fixed inset-0 z-[60] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeAssetModal()"></div>
+  
+  <div class="bg-white w-full max-w-md mx-4 rounded-2xl shadow-2xl z-10 overflow-hidden transform transition-all">
+    <div class="bg-strabon-primary text-white px-6 py-4 flex justify-between items-center">
+      <h3 class="font-bold font-header tracking-wide">Add New Asset</h3>
+      <button onclick="closeAssetModal()" class="text-white/70 hover:text-white transition">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+    </div>
+    
+    <div class="p-6">
+      <form id="asset-form" onsubmit="event.preventDefault(); saveAsset();" class="space-y-4">
+        
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Asset / Item Name</label>
+          <input type="text" id="asset-item" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:border-strabon-accent focus:ring-1 focus:ring-strabon-accent outline-none transition" placeholder="e.g. CAT 336 Excavator" required>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4">
+          <div class="col-span-2">
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Specs</label>
+            <input type="text" id="asset-specs" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm outline-none transition" placeholder="2022 Model, Low hours">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Qty</label>
+            <input type="number" id="asset-qty" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm outline-none transition" value="1">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Location</label>
+          <input type="text" id="asset-location" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm outline-none transition" placeholder="e.g. Ankara Warehouse">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Status</label>
+          <select id="asset-status" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-white outline-none transition">
+            <option value="Available">Available</option>
+            <option value="Under Maintenance">Under Maintenance</option>
+            <option value="Out of Service">Out of Service</option>
+          </select>
+        </div>
+
+        <div class="pt-4 flex gap-3">
+          <button type="button" onclick="closeAssetModal()" class="flex-1 px-4 py-3 rounded-xl border border-gray-300 text-gray-600 font-bold text-xs hover:bg-gray-50 transition">
+            CANCEL
+          </button>
+          <button type="submit" class="flex-1 px-4 py-3 rounded-xl bg-strabon-accent text-white font-bold text-xs hover:bg-strabon-darkAccent transition shadow-lg shadow-cyan-500/20">
+            SAVE ASSET
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
 <script>
+  // Login modalını aç/kapat
   function openLoginModal() {
     const modal = document.getElementById("login-modal");
+    if (!modal) return;
     modal.classList.remove("hidden");
     modal.classList.add("flex");
+
+    const err = document.getElementById("login-error");
+    if (err) {
+      err.classList.add("hidden");
+      err.textContent = "";
+    }
   }
 
   function closeLoginModal() {
     const modal = document.getElementById("login-modal");
+    if (!modal) return;
     modal.classList.add("hidden");
     modal.classList.remove("flex");
 
@@ -1465,6 +1503,32 @@
     }
   }
 
+  // 🔹 LOGIN SONRASI: "Benim şirketim" varsa onu aç, yoksa editörü aç
+  function openMyCompanyIfExists() {
+    let myId = null;
+
+    try {
+      myId = localStorage.getItem("strabon_my_company_id");
+    } catch (e) {
+      console.warn("localStorage erişilemedi:", e);
+    }
+
+    // localStorage'da şirket ID'si varsa → direkt o profili aç
+    if (myId && typeof openProfile === "function") {
+      const numId = Number(myId);
+      if (!Number.isNaN(numId)) {
+        openProfile(numId);
+        return;
+      }
+    }
+
+    // Henüz kayıtlı şirket yoksa → editör ekranına götür
+    if (typeof showEditorView === "function") {
+      showEditorView();
+    }
+  }
+
+  // Sayfa yüklendiğinde login formunu hazırla
   document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("login-form");
     if (!form) return;
@@ -1476,28 +1540,41 @@
       const email = data.get("email");
       const password = data.get("password");
 
-      const { data: authData, error } = await supabaseClient.auth
-        .signInWithPassword({ email, password });
-
       const err = document.getElementById("login-error");
+      if (err) {
+        err.classList.add("hidden");
+        err.textContent = "";
+      }
+
+      const { data: authData, error } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password,
+      });
 
       if (error) {
-        err.textContent = error.message || "Login failed";
-        err.classList.remove("hidden");
+        if (err) {
+          err.textContent = error.message || "Login failed";
+          err.classList.remove("hidden");
+        }
         return;
       }
 
-      // Login başarılı → modalı kapat ve editörü aç
+      // ✅ Login başarılı → modalı kapat ve "benim şirketimi" aç
       closeLoginModal();
-      if (typeof showEditorView === "function") {
-        showEditorView();
-      }
+      openMyCompanyIfExists();
     });
   });
 
+  // Logout
   async function partnerLogout() {
-    await supabaseClient.auth.signOut();
-    window.location.href = "/";
+    try {
+      await supabaseClient.auth.signOut();
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
+      // İstersen burada ana ekrana döndürürüz
+      window.location.href = "/";
+    }
   }
 </script>
 
@@ -2678,40 +2755,100 @@
     }
 
     function saveProfileData() {
-        // 1. Get Values
-        const name = document.getElementById("edit-name").value;
-        const tagline = document.getElementById("edit-tagline").value;
-        const city = document.getElementById("edit-city").value;
-        const sector = document.getElementById("edit-sector").value;
-        const desc = document.getElementById("edit-desc").value;
-        const servicesStr = document.getElementById("edit-services").value;
-        const certsStr = document.getElementById("edit-certs").value;
+  // 1. Input elemanlarını al
+  const nameEl     = document.getElementById("edit-name");
+  const taglineEl  = document.getElementById("edit-tagline");
+  const cityEl     = document.getElementById("edit-city");
+  const sectorEl   = document.getElementById("edit-sector");
+  const descEl     = document.getElementById("edit-desc");
+  const servicesEl = document.getElementById("edit-services");
+  const certsEl    = document.getElementById("edit-certs");
 
-        // 2. Create Object
-        const newId = Date.now(); // Simple unique ID
-        const newCompany = {
-            id: newId,
-            name: name,
-            city: city,
-            sector: sector,
-            tagline: tagline,
-            desc: desc,
-            desc_tr: desc, // Using same desc for demo
-            trust: "verified",
-            meta: { references: 80, delivery: 80, years: 80, financial: 80, digital: 80 }, // Starter score
-            services: servicesStr.split(',').map(s => s.trim()).filter(s => s),
-            certificates: certsStr.split(',').map(s => s.trim()).filter(s => s),
-            projects: [], // Empty for now in demo editor
-            assets: []    // Empty for now in demo editor
-        };
+  const name        = (nameEl && nameEl.value || "").trim();
+  const tagline     = (taglineEl && taglineEl.value || "").trim();
+  const city        = (cityEl && cityEl.value || "").trim();
+  const sector      = (sectorEl && sectorEl.value || "").trim();
+  const desc        = (descEl && descEl.value || "").trim();
+  const servicesStr = (servicesEl && servicesEl.value || "").trim();
+  const certsStr    = (certsEl && certsEl.value || "").trim();
 
-        // 3. Add to Database
-        database.unshift(newCompany); // Add to top
+  // 2. Zorunlu alan kontrolü
+  const requiredFields = [
+    { el: nameEl,   value: name,   label: "Company Name" },
+    { el: cityEl,   value: city,   label: "City" },
+    { el: sectorEl, value: sector, label: "Sector" },
+    { el: descEl,   value: desc,   label: "Description" },
+  ];
 
-        // 4. Show success & Go to Profile
-        alert("Profile Created Successfully! Redirecting to preview...");
-        openProfile(newId);
+  const missingLabels = [];
+  requiredFields.forEach((field) => {
+    if (!field.value) {
+      missingLabels.push(field.label);
     }
+  });
+
+  if (missingLabels.length > 0) {
+    alert(
+      "Please fill in the following required fields:\n\n- " +
+      missingLabels.join("\n- ")
+    );
+    return;
+  }
+
+  // 3. Yeni şirket objesini oluştur (database yapısına uygun)
+  const newId = Date.now(); // basit unique ID
+
+  const newCompany = {
+    id: newId,
+    name: name,
+    city: city,
+    sector: sector,
+    type: "supplier", // istersen bunu "contractor" yapabiliriz
+    tagline: tagline,
+    desc: desc,
+    desc_tr: desc, // şimdilik TR için aynı metin
+    trust: "verified",
+    meta: {
+      references: 80,
+      delivery: 80,
+      years: 80,
+      financial: 80,
+      digital: 80,
+    },
+    services: servicesStr
+      ? servicesStr
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s)
+      : [],
+    certificates: certsStr
+      ? certsStr
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s)
+      : [],
+    projects: [],
+    assets: [],
+  };
+
+  // 4. Bu profili "benim şirketim" olarak localStorage'a kaydet
+  try {
+    localStorage.setItem("strabon_my_company_id", String(newId));
+  } catch (e) {
+    console.warn("Could not save my company id", e);
+  }
+
+  // 5. Local database'e ekle
+  if (Array.isArray(database)) {
+    database.unshift(newCompany);
+  }
+
+  // 6. Bilgi ver & profile yönlendir
+  alert("Profile created successfully. Redirecting to preview…");
+  openProfile(newId);
+}
+
+
 
     function showMainView() {
       const viewDashboard = document.getElementById("view-dashboard");
@@ -2813,7 +2950,7 @@
   }
 
     }
-
+      
     document.addEventListener("DOMContentLoaded", () => {
       applyTranslations();
       initTopCompaniesOrder();
@@ -2825,5 +2962,218 @@
 
       switchLanguage("en");
     });
+// --- ASSET MODAL JS ---
+  function openAssetModal() {
+    const modal = document.getElementById("asset-modal");
+    if (modal) {
+        modal.classList.remove("pointer-events-none", "opacity-0");
+    } else {
+        console.error("Asset modal bulunamadı!");
+    }
+  }
+
+  function closeAssetModal() {
+    const modal = document.getElementById("asset-modal");
+    if (modal) modal.classList.add("pointer-events-none", "opacity-0");
+    
+    const form = document.getElementById("asset-form");
+    if (form) form.reset();
+  }
+
+  function saveAsset() {
+    // Form verilerini al
+    const item = document.getElementById("asset-item").value.trim();
+    const specs = document.getElementById("asset-specs").value.trim();
+    const qty = document.getElementById("asset-qty").value.trim() || "1";
+    const location = document.getElementById("asset-location").value.trim();
+    const status = document.getElementById("asset-status").value;
+
+    if (!item) {
+      alert("Please enter an asset name.");
+      return;
+    }
+
+    // Tabloyu bul
+    const tbody = document.getElementById("p-assets-list");
+    
+    // Eğer tabloda "No assets listed" yazısı varsa temizle
+    if (tbody.innerHTML.includes("No assets listed") || tbody.innerHTML.includes("Kayıtlı varlık bulunmuyor")) {
+        tbody.innerHTML = "";
+    }
+
+    // Rengi belirle
+    let badgeClass = "bg-slate-50 text-slate-600";
+    if(status === "Available") badgeClass = "bg-emerald-50 text-emerald-700";
+    else if(status === "Under Maintenance") badgeClass = "bg-amber-50 text-amber-700";
+    else if(status === "Out of Service") badgeClass = "bg-rose-50 text-rose-700";
+
+    // Yeni satırı oluştur
+    const tr = document.createElement("tr");
+    tr.className = "border-b border-gray-50 last:border-0 hover:bg-gray-50 transition animate-fade-in";
+    tr.innerHTML = `
+        <td class="py-3 px-6 text-xs text-gray-700 font-medium">${item}</td>
+        <td class="py-3 px-6 text-xs text-gray-500">${specs || "-"}</td>
+        <td class="py-3 px-6 text-xs text-gray-700">${qty}</td>
+        <td class="py-3 px-6 text-xs text-gray-500">${location || "-"}</td>
+        <td class="py-3 px-6 text-xs">
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-semibold ${badgeClass}">
+                <span class="mr-1">●</span> ${status}
+            </span>
+        </td>
+    `;
+
+    // Tabloya ekle
+    tbody.appendChild(tr);
+
+    // Modalı kapat
+    closeAssetModal();
+  }
   </script>
+<script>
+// 1. YENİ KAYIT (JOIN) İŞLEMİ
+async function handleJoin() {
+  const btn = document.querySelector("#join-form button");
+  const originalText = btn.textContent;
+  btn.textContent = "İşleniyor...";
+  btn.disabled = true;
+
+  try {
+    // Formdan verileri al
+    const email = document.getElementById("join-email").value;
+    const password = document.getElementById("join-password").value;
+    const companyName = document.getElementById("join-companyName").value;
+    const sector = document.getElementById("join-sector").value;
+    const city = document.getElementById("join-city").value;
+    const services = document.getElementById("join-services").value;
+    const errEl = document.getElementById("join-error");
+
+    if(errEl) errEl.classList.add("hidden");
+
+    // A. Supabase Kullanıcı Kaydı
+    const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+      email,
+      password,
+    });
+
+    if (authError) throw authError;
+
+    // B. Şirket Bilgilerini Veritabanına Yazma
+    const { error: dbError } = await supabaseClient.from('profiles').insert([
+      {
+        id: authData.user.id,
+        email: email,
+        company_name: companyName,
+        sector: sector,
+        city: city,
+        services: services,
+        description: "",
+        size: "1-10"
+      }
+    ]);
+
+    if (dbError) throw dbError;
+
+    alert("Kayıt başarılı! Profiliniz oluşturuldu.");
+    toggleModal('modal-join');
+    
+    // Otomatik giriş kontrolü
+    checkUserAndOpenProfile();
+
+  } catch (error) {
+    console.error(error);
+    const errEl = document.getElementById("join-error");
+    if(errEl) {
+      errEl.textContent = "Hata: " + (error.message || error);
+      errEl.classList.remove("hidden");
+    }
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+
+// 2. KULLANICIYI TANI VE PROFİLİ AÇ
+async function checkUserAndOpenProfile() {
+  // Oturum var mı bak
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  
+  // Login/Logout butonlarını ayarla
+  const btnLogin = document.getElementById("btn-partner-login");
+  const btnLogout = document.getElementById("btn-partner-logout");
+
+  if (!session) {
+    if(btnLogin) btnLogin.classList.remove("hidden");
+    if(btnLogout) btnLogout.classList.add("hidden");
+    return;
+  } else {
+    if(btnLogin) btnLogin.classList.add("hidden");
+    if(btnLogout) btnLogout.classList.remove("hidden");
+  }
+
+  // Veritabanından şirket bilgilerini çek
+  const { data: profile, error } = await supabaseClient
+    .from('profiles')
+    .select('*')
+    .eq('id', session.user.id)
+    .single();
+
+  if (error || !profile) {
+    console.log("Profil verisi henüz yok.");
+    return;
+  }
+
+  // Gelen veriyi sitenin anlayacağı formata çevir
+  const mappedProfile = {
+    id: profile.id, // ID artık veritabanından geliyor
+    name: profile.company_name,
+    city: profile.city,
+    sector: profile.sector || "construction",
+    desc: profile.description || "Henüz açıklama girilmedi.",
+    services: profile.services ? profile.services.split(',') : [],
+    trust: "verified",
+    // Yeni üyeler için başlangıç puanı
+    meta: { references: 50, delivery: 50, years: 1, financial: 50, digital: 50 },
+    assets: [],
+    projects: [] 
+  };
+
+  // Bu şirketi geçici olarak listeye ekle ki sayfa açabilsin
+  if (typeof database !== 'undefined') {
+      // Varsa güncelle, yoksa en başa ekle
+      const idx = database.findIndex(c => c.id == profile.id);
+      if (idx > -1) {
+        database[idx] = mappedProfile;
+      } else {
+        database.unshift(mappedProfile);
+      }
+      
+      // VE PROFİL SAYFASINI AÇ!
+      console.log("Kullanıcı profili açılıyor:", mappedProfile.name);
+      openProfile(mappedProfile.id);
+      
+      // Kullanıcıya kendi profilini düzenleme yetkisi ver (ID eşleşirse)
+      localStorage.setItem("strabon_my_company_id", profile.id);
+  }
+}
+
+// 3. SAYFA YÜKLENİNCE ÇALIŞTIR
+document.addEventListener("DOMContentLoaded", () => {
+    // Eski login sistemi yerine bunu kullanacağız
+    window.openMyCompanyIfExists = function() {
+        checkUserAndOpenProfile();
+    };
+    
+    // Sayfa açıldıktan yarım saniye sonra kontrol et
+    setTimeout(checkUserAndOpenProfile, 500);
+});
+
+// Oturum durumu değişirse (Giriş/Çıkış) tetikle
+supabaseClient.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN') {
+    checkUserAndOpenProfile();
+  } else if (event === 'SIGNED_OUT') {
+    window.location.reload();
+  }
+});
+</script>
 </html>
