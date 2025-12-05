@@ -1512,31 +1512,7 @@
     }
   }
 
-  // 🔹 LOGIN SONRASI: "Benim şirketim" varsa onu aç, yoksa editörü aç
-  function openMyCompanyIfExists() {
-    let myId = null;
-
-    try {
-      myId = localStorage.getItem("strabon_my_company_id");
-    } catch (e) {
-      console.warn("localStorage erişilemedi:", e);
-    }
-
-    // localStorage'da şirket ID'si varsa → direkt o profili aç
-    if (myId && typeof openProfile === "function") {
-      const numId = Number(myId);
-      if (!Number.isNaN(numId)) {
-        openProfile(numId);
-        return;
-      }
-    }
-
-    // Henüz kayıtlı şirket yoksa → editör ekranına götür
-    if (typeof showEditorView === "function") {
-      showEditorView();
-    }
-  }
-
+  
   // Sayfa yüklendiğinde login formunu hazırla
   document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("login-form");
