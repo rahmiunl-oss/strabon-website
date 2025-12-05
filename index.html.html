@@ -3187,5 +3187,35 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
     window.location.reload();
   }
 });
+/* --- MY COMPANY BUTONU DÜZELTME --- */
+
+// Eski fonksiyonu bununla değiştiriyoruz/eziyoruz:
+function openMyCompanyIfExists() {
+  // 1. LocalStorage'dan ID'yi al
+  const myId = localStorage.getItem("strabon_my_company_id");
+  
+  if (!myId) {
+    console.warn("Kayıtlı şirket ID'si bulunamadı, oturum kontrol ediliyor...");
+    checkUserAndOpenProfile(); // ID yoksa tekrar giriş kontrolü yap
+    return;
+  }
+
+  console.log("Şirket profili açılıyor, ID:", myId);
+
+  // 2. Eğer bu şirket veritabanı listemizde yoksa (Sayfa yenilendiyse kaybolmuş olabilir)
+  // Önce listeye ekleyip sonra açmamız gerekebilir.
+  // Ama checkUserAndOpenProfile zaten çalışıp eklemiş olmalı.
+  
+  const companyExists = typeof database !== 'undefined' && database.find(c => c.id == myId);
+
+  if (companyExists) {
+    // Şirket listede var, direkt aç
+    openProfile(myId);
+  } else {
+    // Şirket listede yoksa, verileri tekrar çekip açması için checkUser'ı tetikle
+    checkUserAndOpenProfile();
+  }
+}
+
 </script>
 </html>
