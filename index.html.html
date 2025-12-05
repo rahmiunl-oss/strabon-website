@@ -2759,6 +2759,7 @@
     }
 
    // ✅ YENİ KAYDETME FONKSİYONU (Supabase Uyumlu)
+// ✅ YENİSİNİ BURAYA YAPIŞTIR
 async function saveProfileData() {
   const btn = document.querySelector("#editor-form button[type='submit']");
   const originalText = btn.textContent;
@@ -2775,7 +2776,7 @@ async function saveProfileData() {
     const servicesStr = document.getElementById("edit-services").value.trim();
     const certsStr = document.getElementById("edit-certs").value.trim();
 
-    // 2. Verileri hazırla
+    // 2. Supabase güncellemesi
     const updates = {
       company_name: name,
       city: city,
@@ -2785,9 +2786,7 @@ async function saveProfileData() {
       updated_at: new Date(),
     };
 
-    // 3. Supabase'e GÜNCELLEME (Update) isteği at
     const { data: { user } } = await supabaseClient.auth.getUser();
-
     if (!user) throw new Error("Oturum bulunamadı!");
 
     const { error } = await supabaseClient
@@ -2799,8 +2798,26 @@ async function saveProfileData() {
 
     alert("Profil başarıyla güncellendi!");
 
-    // 4. Sayfayı yenile ki güncel veriler gelsin
-    window.location.reload(); 
+    // 3. EKRANI GÜNCELLE (Sayfa yenilemeden)
+    // RAM'deki veriyi güncelliyoruz
+    const localCompany = database.find(c => c.id == user.id);
+    if (localCompany) {
+        localCompany.name = name;
+        localCompany.city = city;
+        localCompany.sector = sector;
+        localCompany.desc = desc;
+        localCompany.tagline = tagline;
+        localCompany.services = servicesStr.split(',').map(s => s.trim()).filter(s => s);
+        localCompany.certificates = certsStr.split(',').map(s => s.trim()).filter(s => s);
+    }
+
+    // 4. Profili tekrar aç (Ana sayfaya atmasın diye)
+    openProfile(user.id);
+
+    // Editörü gizle, profili göster
+    document.getElementById("view-editor").classList.add("hidden-view");
+    document.getElementById("view-profile").classList.remove("hidden-view");
+    document.getElementById("back-btn").classList.remove("hidden", "hidden-view");
 
   } catch (error) {
     console.error("Güncelleme hatası:", error);
@@ -2810,7 +2827,6 @@ async function saveProfileData() {
     btn.disabled = false;
   }
 }
-
 
     function showMainView() {
       const viewDashboard = document.getElementById("view-dashboard");
