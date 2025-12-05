@@ -1077,45 +1077,48 @@
 </div>
 <div id="content-assets" class="hidden-view">
   <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-    <!-- Üst başlık: sadece durum badge'leri + Add Asset -->
-    <div class="flex flex-wrap items-center justify-between gap-3 px-6 pt-4 pb-3 border-b border-gray-100">
-      <div class="flex flex-wrap items-center gap-2 text-[10px]">
-        <span class="inline-flex items-center px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold">
-          <span class="mr-1">●</span> Available
-        </span>
-        <span class="inline-flex items-center px-2 py-1 rounded-full bg-amber-50 text-amber-700 font-semibold">
-          <span class="mr-1">●</span> Under Maintenance
-        </span>
-        <span class="inline-flex items-center px-2 py-1 rounded-full bg-rose-50 text-rose-700 font-semibold">
-          <span class="mr-1">●</span> Out of Service
-        </span>
-
-        <!-- Add Asset Button -->
-        <button
-          id="btn-add-asset"
-          type="button"
-          onclick="openAssetModal()"
-          class="hidden-view ml-2 inline-flex items-center px-3 py-1.5 rounded-full bg-strabon-accent text-white font-bold shadow-sm text-[10px] hover:bg-strabon-darkAccent transition"
-        >
-          <i class="fa-solid fa-plus mr-1"></i> Add Asset
-        </button>
+    
+    <div class="flex flex-wrap items-center justify-between px-6 py-5 border-b border-gray-100 bg-gray-50/30">
+      
+      <div class="flex flex-col gap-2">
+        <h3 class="font-bold text-strabon-primary font-header uppercase text-sm tracking-wider">
+          Equipment & Assets
+        </h3>
+        <div class="flex flex-wrap items-center gap-2 text-[10px]">
+           <span class="inline-flex items-center px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold border border-emerald-100">Available</span>
+           <span class="inline-flex items-center px-2 py-1 rounded-full bg-amber-50 text-amber-700 font-semibold border border-amber-100">Maintenance</span>
+           <span class="inline-flex items-center px-2 py-1 rounded-full bg-rose-50 text-rose-700 font-semibold border border-rose-100">Out of Service</span>
+        </div>
       </div>
+
+      <button
+        id="btn-add-asset"
+        type="button"
+        onclick="openAssetModal()"
+        class="hidden-view items-center gap-2 px-4 py-2 rounded-lg bg-strabon-primary text-white font-bold text-xs hover:bg-strabon-accent transition shadow-lg shadow-blue-900/10"
+      >
+        <i class="fa-solid fa-plus"></i> 
+        <span>ADD NEW ASSET</span>
+      </button>
+
     </div>
 
-    <!-- Tablo: Item - Specs - Qty - Location - Status -->
-    <table class="min-w-full text-sm">
-      <thead class="bg-gray-50 text-gray-500 uppercase font-bold text-xs">
-        <tr>
-          <th class="py-4 px-6 text-left">Item</th>
-          <th class="py-4 px-6 text-left">Specs</th>
-          <th class="py-4 px-6 text-left">Qty</th>
-          <th class="py-4 px-6 text-left">Location</th>
-          <th class="py-4 px-6 text-left">Status</th>
-        </tr>
-      </thead>
-
-      <tbody id="p-assets-list" class="divide-y divide-gray-100"></tbody>
-    </table>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm text-left">
+        <thead class="bg-gray-50 text-gray-400 uppercase font-bold text-[10px] tracking-wider">
+          <tr>
+            <th class="py-3 px-6">Item Name</th>
+            <th class="py-3 px-6">Specs / Model</th>
+            <th class="py-3 px-6 text-center">Qty</th>
+            <th class="py-3 px-6">Location</th>
+            <th class="py-3 px-6">Status</th>
+            <th class="py-3 px-6 text-right w-24">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="p-assets-list" class="divide-y divide-gray-100">
+          </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -1465,7 +1468,7 @@
   
   <div class="bg-white w-full max-w-md mx-4 rounded-2xl shadow-2xl z-10 overflow-hidden transform transition-all">
     <div class="bg-strabon-primary text-white px-6 py-4 flex justify-between items-center">
-      <h3 class="font-bold font-header tracking-wide">Add New Asset</h3>
+      <h3 id="asset-modal-title" class="font-bold font-header tracking-wide">Add New Asset</h3>
       <button onclick="closeAssetModal()" class="text-white/70 hover:text-white transition">
         <i class="fa-solid fa-xmark text-xl"></i>
       </button>
@@ -2723,48 +2726,66 @@
       // --- RENDER CERTIFICATES ---
       renderCertificates(company);
 
+      // ✅ GÜNCELLENMİŞ ASSET TABLOSU KODU
       const assetsList = document.getElementById("p-assets-list");
       if (assetsList) {
         assetsList.innerHTML = "";
         const assets = company.assets || [];
+        
+        // Bu profili görüntüleyen kişi sahibi mi?
+        const myId = localStorage.getItem("strabon_my_company_id");
+        const isOwner = (myId && String(company.id) === String(myId));
+
         if (assets.length === 0) {
-          assetsList.innerHTML = `
-            <tr>
-              <td colspan="3" class="py-4 px-6 text-xs text-gray-500">
-                ${
-                  currentLang === "tr"
-                    ? "Kayıtlı varlık bulunmuyor."
-                    : "No assets listed."
-                }
-              </td>
-            </tr>
-          `;
+          // Colspan 6 yaptık çünkü tabloda artık 6 sütun var
+          assetsList.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-xs text-gray-400 italic">No assets listed yet.</td></tr>`;
         } else {
           assets.forEach((a) => {
-            const type =
-              currentLang === "tr" && a.type_tr ? a.type_tr : a.type;
-            const spec =
-              currentLang === "tr" && a.spec_tr ? a.spec_tr : a.spec;
-                        const status =
-              currentLang === "tr" && a.status_tr ? a.status_tr : a.status;
-            const baseStatus = a.status || "";
+            const type = a.type || a.type_tr || "";
+            const spec = a.spec || a.spec_tr || "";
+            const status = a.status || "";
+            const qty = a.qty || "1";
+            const loc = a.location || "-";
+            const assetId = a.id; 
+
+            // Status Rengi
+            let badgeClass = "bg-slate-50 text-slate-600 border-slate-100";
+            if(status === "Available") badgeClass = "bg-emerald-50 text-emerald-700 border-emerald-100";
+            else if(status === "Under Maintenance") badgeClass = "bg-amber-50 text-amber-700 border-amber-100";
+            else if(status === "Out of Service") badgeClass = "bg-rose-50 text-rose-700 border-rose-100";
+
+            // BUTONLAR (Sadece sahipsen görünür)
+            let actionButtons = "";
+            if (isOwner) {
+                actionButtons = `
+                  <div class="flex items-center justify-end gap-2">
+                    <button onclick="openAssetModal(${assetId})" class="w-7 h-7 rounded-lg bg-cyan-50 text-strabon-accent hover:bg-strabon-accent hover:text-white transition flex items-center justify-center" title="Edit">
+                      <i class="fa-solid fa-pen text-[10px]"></i>
+                    </button>
+                    <button onclick="deleteAsset(${assetId})" class="w-7 h-7 rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition flex items-center justify-center" title="Delete">
+                      <i class="fa-solid fa-trash text-[10px]"></i>
+                    </button>
+                  </div>
+                `;
+            }
 
             const row = document.createElement("tr");
-            row.className =
-              "border-b border-gray-50 last:border-0 hover:bg-gray-50 transition";
+            row.className = "hover:bg-cyan-50/30 transition group border-b border-gray-50 last:border-0";
             row.innerHTML = `
-              <td class="py-3 px-6 text-xs text-gray-700">
-                ${type}
+              <td class="py-3 px-6 font-bold text-strabon-primary text-xs">${type}</td>
+              <td class="py-3 px-6 text-gray-500 text-xs">${spec}</td>
+              <td class="py-3 px-6 text-center font-mono text-xs">${qty}</td>
+              <td class="py-3 px-6 text-gray-500 text-xs">${loc}</td>
+              <td class="py-3 px-6">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold border ${badgeClass}">
+                  ${status}
+                </span>
               </td>
-              <td class="py-3 px-6 text-xs text-gray-500">
-                ${spec}
-              </td>
-              <td class="py-3 px-6 text-xs">
-                ${getStatusBadge(baseStatus, status)}
+              <td class="py-3 px-6 text-right">
+                ${actionButtons}
               </td>
             `;
             assetsList.appendChild(row);
-
           });
         }
       }
@@ -2995,87 +3016,154 @@ async function saveProfileData() {
 
       switchLanguage("en");
     });
-// --- ASSET MODAL JS ---
-  function openAssetModal() {
-    const modal = document.getElementById("asset-modal");
-    if (modal) {
-        modal.classList.remove("pointer-events-none", "opacity-0");
-    } else {
-        console.error("Asset modal bulunamadı!");
-    }
-  }
+/* --- GELİŞMİŞ ASSET YÖNETİMİ (EKLE - DÜZENLE - SİL) --- */
 
-  function closeAssetModal() {
-    const modal = document.getElementById("asset-modal");
-    if (modal) modal.classList.add("pointer-events-none", "opacity-0");
+let currentEditingAssetId = null;
+
+// 1. MODALI AÇ (Ekleme veya Düzenleme)
+function openAssetModal(assetId = null) {
+  const modal = document.getElementById("asset-modal");
+  const form = document.getElementById("asset-form");
+  const title = document.getElementById("asset-modal-title");
+  
+  if (!modal) return;
+  modal.classList.remove("pointer-events-none", "opacity-0");
+  
+  // Formu temizle
+  if(form) form.reset();
+  
+  if (assetId) {
+    // --- DÜZENLEME MODU ---
+    currentEditingAssetId = assetId;
+    if(title) title.textContent = "Edit Asset Details";
     
-    const form = document.getElementById("asset-form");
-    if (form) form.reset();
+    // Veriyi bul ve kutulara doldur
+    const asset = selectedCompany.assets.find(a => a.id === assetId);
+    if (asset) {
+        document.getElementById("asset-item").value = asset.type || asset.type_tr || "";
+        document.getElementById("asset-specs").value = asset.spec || asset.spec_tr || "";
+        document.getElementById("asset-qty").value = asset.qty || "1";
+        document.getElementById("asset-location").value = asset.location || "";
+        document.getElementById("asset-status").value = asset.status || "Available";
+    }
+  } else {
+    // --- EKLEME MODU ---
+    currentEditingAssetId = null;
+    if(title) title.textContent = "Add New Asset";
   }
+}
 
-  // ✅ GÜNCELLENMİŞ ASSET KAYDETME (Supabase Uyumlu)
+function closeAssetModal() {
+  const modal = document.getElementById("asset-modal");
+  if (modal) modal.classList.add("pointer-events-none", "opacity-0");
+  currentEditingAssetId = null;
+}
+
+// 2. KAYDET (Hem Yeni Ekleme Hem Güncelleme)
 async function saveAsset() {
   const btn = document.querySelector("#asset-form button[type='submit']");
   const originalText = btn.textContent;
-  btn.textContent = "Kaydediliyor...";
+  btn.textContent = "İşleniyor...";
   btn.disabled = true;
 
   try {
-    // 1. Form verilerini al
     const item = document.getElementById("asset-item").value.trim();
     const specs = document.getElementById("asset-specs").value.trim();
-    const qty = document.getElementById("asset-qty").value.trim() || "1";
+    const qty = document.getElementById("asset-qty").value.trim();
     const location = document.getElementById("asset-location").value.trim();
     const status = document.getElementById("asset-status").value;
 
     if (!item) { alert("Lütfen bir isim girin."); return; }
 
-    // 2. Yeni Asset Objesi Oluştur
-    const newAsset = {
-        id: Date.now(),
-        type: item,
-        spec: specs,
-        qty: qty,
-        location: location,
-        status: status,
-        date_added: new Date().toISOString()
-    };
+    // Listeyi kopyala
+    let currentAssets = [...(selectedCompany.assets || [])];
 
-    // 3. Mevcut listeyi al ve yenisini ekle
-    let currentAssets = selectedCompany.assets || [];
-    if (!Array.isArray(currentAssets)) currentAssets = [];
-    const updatedAssetsList = [...currentAssets, newAsset];
+    if (currentEditingAssetId) {
+        // --- GÜNCELLEME İŞLEMİ ---
+        const index = currentAssets.findIndex(a => a.id === currentEditingAssetId);
+        if (index > -1) {
+            currentAssets[index] = {
+                ...currentAssets[index], // ID ve tarih değişmesin
+                type: item,
+                spec: specs,
+                qty: qty,
+                location: location,
+                status: status,
+                updated_at: new Date().toISOString()
+            };
+        }
+    } else {
+        // --- YENİ EKLEME İŞLEMİ ---
+        const newAsset = {
+            id: Date.now(),
+            type: item,
+            spec: specs,
+            qty: qty,
+            location: location,
+            status: status,
+            date_added: new Date().toISOString()
+        };
+        currentAssets.push(newAsset);
+    }
 
-    // 4. Supabase'e GÖNDER
+    // SUPABASE KAYIT
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) throw new Error("Oturum yok.");
 
     const { error } = await supabaseClient
       .from('profiles')
-      .update({ assets: updatedAssetsList, updated_at: new Date() })
+      .update({ assets: currentAssets, updated_at: new Date() })
       .eq('id', user.id);
 
     if (error) throw error;
 
-    // 5. Ekranı güncelle
-    selectedCompany.assets = updatedAssetsList;
+    // EKRANI GÜNCELLE
+    selectedCompany.assets = currentAssets;
     const localRef = database.find(c => c.id == user.id);
-    if(localRef) localRef.assets = updatedAssetsList;
+    if(localRef) localRef.assets = currentAssets;
 
-    // 6. Listeyi tekrar çiz
+    // Listeyi yenile ve kapat
     openProfile(user.id);
     switchProfileTab('assets');
-
-    alert("Varlık başarıyla eklendi!");
     closeAssetModal();
 
   } catch (error) {
-    console.error("Asset hatası:", error);
+    console.error(error);
     alert("Hata: " + error.message);
   } finally {
     btn.textContent = originalText;
     btn.disabled = false;
   }
+}
+
+// 3. SİLME İŞLEMİ
+async function deleteAsset(assetId) {
+    if(!confirm("Bu varlığı silmek istediğinize emin misiniz?")) return;
+
+    try {
+        // Silinecek olan hariç diğerlerini al
+        let currentAssets = selectedCompany.assets.filter(a => a.id !== assetId);
+
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        
+        const { error } = await supabaseClient
+            .from('profiles')
+            .update({ assets: currentAssets, updated_at: new Date() })
+            .eq('id', user.id);
+
+        if (error) throw error;
+
+        // Ekranı güncelle
+        selectedCompany.assets = currentAssets;
+        const localRef = database.find(c => c.id == user.id);
+        if(localRef) localRef.assets = currentAssets;
+
+        openProfile(user.id);
+        switchProfileTab('assets');
+
+    } catch (error) {
+        alert("Silme hatası: " + error.message);
+    }
 }
   </script>
 <script>
