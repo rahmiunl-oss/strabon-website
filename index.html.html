@@ -1546,7 +1546,7 @@
 
       // ✅ Login başarılı → modalı kapat ve "benim şirketimi" aç
       closeLoginModal();
-      openMyCompanyIfExists();
+      checkUserAndOpenProfile(true);
     });
   });
 
@@ -3077,30 +3077,27 @@ async function handleJoin() {
   }
 }
 
-// 2. KULLANICIYI TANI VE PROFİLİ AÇ (GÜNCELLENMİŞ VERSİYON)
-async function checkUserAndOpenProfile() {
+// ✅ BUNU YAPIŞTIR
+async function checkUserAndOpenProfile(forceOpen = false) {
   // Oturum var mı bak
   const { data: { session } } = await supabaseClient.auth.getSession();
   
-  // Butonları element olarak seç
   const btnLogin = document.getElementById("btn-partner-login");
   const btnLogout = document.getElementById("btn-partner-logout");
-  const btnMyCompany = document.getElementById("btn-my-company"); // YENİ BUTON
+  const btnMyCompany = document.getElementById("btn-my-company");
 
   if (!session) {
-    // Oturum YOKSA: Login göster, diğerlerini gizle
     if(btnLogin) btnLogin.classList.remove("hidden");
     if(btnLogout) btnLogout.classList.add("hidden");
     if(btnMyCompany) btnMyCompany.classList.add("hidden");
     return;
   } else {
-    // Oturum VARSA: Login gizle, Logout ve Şirketim butonunu göster
     if(btnLogin) btnLogin.classList.add("hidden");
     if(btnLogout) btnLogout.classList.remove("hidden");
     if(btnMyCompany) btnMyCompany.classList.remove("hidden");
   }
 
-  // Veritabanından şirket bilgilerini çek
+  // Veritabanından veriyi çek
   const { data: profile, error } = await supabaseClient
     .from('profiles')
     .select('*')
@@ -3108,17 +3105,17 @@ async function checkUserAndOpenProfile() {
     .single();
 
   if (error || !profile) {
-    console.log("Profil verisi henüz yok.");
+    console.log("Profil verisi yok.");
     return;
   }
 
-  // Gelen veriyi sitenin anlayacağı formata çevir
+  // Veriyi formatla
   const mappedProfile = {
     id: profile.id,
     name: profile.company_name,
     city: profile.city,
     sector: profile.sector || "construction",
-    desc: profile.description || "Henüz açıklama girilmedi.",
+    desc: profile.description || "",
     services: profile.services ? profile.services.split(',') : [],
     trust: "verified",
     meta: { references: 50, delivery: 50, years: 1, financial: 50, digital: 50 },
@@ -3126,7 +3123,7 @@ async function checkUserAndOpenProfile() {
     projects: [] 
   };
 
-  // Listeye ekle ve hafızaya al
+  // Listeye ekle
   if (typeof database !== 'undefined') {
       const idx = database.findIndex(c => c.id == profile.id);
       if (idx > -1) {
@@ -3135,12 +3132,12 @@ async function checkUserAndOpenProfile() {
         database.unshift(mappedProfile);
       }
       
-      // Kullanıcı ID'sini kaydet
       localStorage.setItem("strabon_my_company_id", profile.id);
 
-      // EĞER sayfa ilk açılışı ise (kullanıcı tıklamadıysa) direkt profili açmayalım
-      // Sadece veriyi yüklemiş olalım. 
-      // Ama "Join" işleminden hemen sonra burası çağrıldığında otomatik açılacak.
+      // 🔥 EĞER GİRİŞ YAPILDIYSA ZORLA PROFİLİ AÇ
+      if (forceOpen === true) {
+        openProfile(profile.id);
+      }
   }
 }
 
