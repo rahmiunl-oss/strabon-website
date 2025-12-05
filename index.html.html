@@ -192,7 +192,8 @@
           <span data-i18n="back">BACK</span>
         </button>
 
-        <button
+       <button
+          id="btn-join-network"
           onclick="toggleModal('modal-join')"
           class="bg-strabon-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-strabon-accent transition text-xs shadow-lg shadow-blue-900/20 tracking-wide border border-transparent hover:border-cyan-300"
         >
@@ -958,7 +959,9 @@
   <i class="fa-solid fa-pen-to-square"></i>
   EDIT PROFILE
 </button>
-        <button
+        
+<button
+          id="btn-req-quote"
           onclick="openQuoteModal(document.getElementById('p-name').innerText)"
           class="bg-strabon-primary text-white px-8 py-4 rounded-xl font-bold shadow-xl shadow-slate-900/10 hover:bg-strabon-accent transition text-sm flex items-center justify-center gap-2"
         >
@@ -2791,29 +2794,28 @@
       }
 
       switchProfileTab("overview");
-// --- EDİT BUTONU KONTROLÜ (Bunu en sona ekle) ---
-// --- ASSET EKLEME BUTONU KONTROLÜ ---
-    const btnAddAsset = document.getElementById("btn-add-asset");
-    // myId değişkenini tekrar almaya gerek yok ama garanti olsun diye alalım
-    const myCurrentId = localStorage.getItem("strabon_my_company_id");
+// ✅ YENİ TOPLU BUTON KONTROLÜ (Edit, Asset ve Teklif Butonları)
+      
+      // 1. Kimlik Kontrolü: Bu profil benim mi?
+      const myCurrentId = localStorage.getItem("strabon_my_company_id");
+      const isMyProfile = (myCurrentId && String(companyId) === String(myCurrentId));
 
-    // Eğer buton varsa VE giriş yapanın ID'si ile profil ID'si aynıysa butonu göster
-    if (btnAddAsset && myCurrentId && String(companyId) === String(myCurrentId)) {
-       btnAddAsset.classList.remove("hidden-view");
-    } else if (btnAddAsset) {
-       // Değilse gizle
-       btnAddAsset.classList.add("hidden-view");
-    }
-    const btnEdit = document.getElementById("btn-edit-profile");
-    const myId = localStorage.getItem("strabon_my_company_id");
+      // 2. Butonları Seç
+      const btnEdit = document.getElementById("btn-edit-profile");
+      const btnAddAsset = document.getElementById("btn-add-asset");
+      const btnQuote = document.getElementById("btn-req-quote"); // Teklif butonu
 
-    // Eğer şu an açılan profil (companyId) benim ID'me eşitse butonu göster
-    if (btnEdit && myId && String(companyId) === String(myId)) {
-      btnEdit.classList.remove("hidden-view"); 
-    } else if (btnEdit) {
-      // Değilse gizle
-      btnEdit.classList.add("hidden-view");
-    }
+      if (isMyProfile) {
+          // --- EĞER BENİM PROFİLİMSE ---
+          if(btnEdit) btnEdit.classList.remove("hidden-view");         // Düzenle: GÖSTER
+          if(btnAddAsset) btnAddAsset.classList.remove("hidden-view"); // Ekle: GÖSTER
+          if(btnQuote) btnQuote.classList.add("hidden-view");          // Teklif İste: GİZLE (Kendinden istemezsin)
+      } else {
+          // --- EĞER BAŞKASININ PROFİLİYSE ---
+          if(btnEdit) btnEdit.classList.add("hidden-view");            // Düzenle: GİZLE
+          if(btnAddAsset) btnAddAsset.classList.add("hidden-view");    // Ekle: GİZLE
+          if(btnQuote) btnQuote.classList.remove("hidden-view");       // Teklif İste: GÖSTER
+      }
     }
 
     // --- EDITOR FUNCTIONS ---
