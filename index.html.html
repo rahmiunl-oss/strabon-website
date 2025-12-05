@@ -3146,10 +3146,6 @@ async function checkUserAndOpenProfile() {
 
 // 3. SAYFA YÜKLENİNCE ÇALIŞTIR
 document.addEventListener("DOMContentLoaded", () => {
-    // Eski login sistemi yerine bunu kullanacağız
-    window.openMyCompanyIfExists = function() {
-        checkUserAndOpenProfile();
-    };
     
     // Sayfa açıldıktan yarım saniye sonra kontrol et
     setTimeout(checkUserAndOpenProfile, 500);
